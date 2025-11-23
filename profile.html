@@ -107,7 +107,7 @@
       // Donation history from bb_donations
       function loadHistory(){
         const all = JSON.parse(localStorage.getItem('bb_donations')||'[]');
-        const mine = all.filter(d=>d.requester === session.identifier || d.userId == session.userId);
+        const mine = all.filter(d=>d.requester === session.identifier || d.userId === session.userId);
         historyEl.innerHTML = '';
         if(mine.length===0) { historyEl.innerHTML = '<p class="muted">No donation history.</p>'; return }
         for(const h of mine){ const el=document.createElement('div'); el.className='donor-card'; el.innerHTML=`<strong>${h.blood_group||h.blood}</strong><div class="meta">${h.last_donation||''}</div>`; historyEl.appendChild(el); }

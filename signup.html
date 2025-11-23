@@ -131,7 +131,7 @@
           }
 
           // Check for existing identifier collision
-          const existing = BBAuth.findUserByIdentifier(data.email) || BBAuth.findUserByIdentifier(data.phone);
+          const existing = (data.email ? BBAuth.findUserByIdentifier(data.email) : null) || BBAuth.findUserByIdentifier(data.phone);
           if(existing){ result.textContent = 'An account with this email or phone already exists.'; return; }
 
           BBAuth.saveUser(data);

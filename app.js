@@ -102,24 +102,24 @@ document.addEventListener('DOMContentLoaded', ()=>{
       if(!avatarSrc) avatarSrc = d.picture || `https://ui-avatars.com/api/?name=${encodeURIComponent(d.name)}&background=0AA6BF&color=ffffff&size=128`;
       const altText = `Avatar of ${d.name}`;
 
-        card.innerHTML = `
-          <div class="card-header">
-            <img class="avatar" src="${avatarSrc}" alt="${escapeHtml(altText)}" />
-            <div style="flex:1;display:flex;flex-direction:column;justify-content:space-start">
-              <div class="card-top-row" style="display:flex;justify-content:space-between;align-items:center">
-                <div class="card-name-main">${escapeHtml(d.name)}</div>
-              </div>
-              <ul class="meta-list">
-                <li class="meta-item"><span class="blood-strong">${bloodLabel}</span></li>
-                <li class="meta-item">${secondary}</li>
-              </ul>
+      card.innerHTML = `
+        <div class="person-top">
+          <img class="avatar" src="${avatarSrc}" alt="${escapeHtml(altText)}" />
+          <div class="person-main">
+            <div class="person-header">
+              <strong class="person-name">${escapeHtml(d.name)}</strong>
+              <span class="person-blood">${escapeHtml(bloodLabel)}</span>
+            </div>
+            <div class="person-details">
+              <div class="person-meta"><span class="label">Location</span><div class="value">${escapeHtml(d.address||secondary||'')}</div></div>
+              <div class="person-meta"><span class="label">Phone</span><div class="value">${escapeHtml(d.phone||'')}</div></div>
             </div>
           </div>
-          <div class="actions">
-            ${ currentView === 'recipients' ? `<div class="action-name">${escapeHtml(d.name)}</div>` : '' }
-            ${ renderActionButtons(currentView, session, d) }
-          </div>
-        `;
+        </div>
+        <div class="actions">
+          ${ renderActionButtons(currentView, session, d) }
+        </div>
+      `;
       // store id on card buttons after creation
       donorListEl.appendChild(card);
       // attach data-id to buttons

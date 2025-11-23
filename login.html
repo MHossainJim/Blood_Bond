@@ -92,7 +92,10 @@
           const session = {role:user.role, identifier: user.email||user.phone||user.identifier, userId:user.id, loggedAt:Date.now()};
           BBAuth.saveSession(session);
           result.textContent = 'Signed in — redirecting...';
-          setTimeout(()=>{ window.location.href = 'index.html#donors'; },600);
+          // Redirect based on role
+          const roleHashMap = { donor: '#donors', recipient: '#recipients', hospital: '#hospitals' };
+          const hash = roleHashMap[user.role] || '';
+          setTimeout(()=>{ window.location.href = 'index.html' + hash; },600);
         });
       });
     </script>
