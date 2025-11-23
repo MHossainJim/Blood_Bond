@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Requests — Blood Bond</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container">
+      <h1 class="brand">Blood Bond</h1>
+      <nav class="nav" aria-label="Main navigation">
+        <a href="index.html">Home</a>
+        <a href="requests.html">Request</a>
+        <a href="profile.html">Profile</a>
+        <a href="campaigns.html">Campaigns</a>
+        <a id="logout-link" href="#" style="display:none">Logout</a>
+      </nav>
+      <div id="user-info" style="color:var(--muted);font-size:0.9rem;margin-left:1rem"></div>
+    </div>
+  </header>
+
+  <main class="container">
+    <h2>All Requests</h2>
+    <p class="muted">View existing requests or create a new one.</p>
+
+    <section class="card" style="margin:1rem 0;">
+      <h3>Create Request</h3>
+      <form id="create-request">
+        <label for="req_blood">Blood group</label>
+        <select id="req_blood" name="blood" required>
+          <option value="">Choose</option>
+          <option value="A+">A+</option>
+          <option value="A-">A-</option>
+          <option value="B+">B+</option>
+          <option value="B-">B-</option>
+          <option value="AB+">AB+</option>
+          <option value="AB-">AB-</option>
+          <option value="O+">O+</option>
+          <option value="O-">O-</option>
+        </select>
+
+        <label for="req_rh">Rh factor</label>
+        <select id="req_rh" name="rh">
+          <option value="">Choose</option>
+          <option value="positive">+</option>
+          <option value="negative">-</option>
+        </select>
+
+        <label for="req_location">Location / Hospital</label>
+        <input id="req_location" name="location" type="text" required />
+
+        <div style="display:flex;gap:0.5rem;margin-top:0.5rem">
+          <button type="submit" class="btn-blood">Submit Request</button>
+        </div>
+      </form>
+    </section>
+
+    <section id="requests-list">
+      <h3>Existing Requests</h3>
+      <div id="requests-container" class="donor-grid"></div>
+    </section>
+  </main>
+
+  <footer class="site-footer"><div class="container"><small>© Blood Bond</small></div></footer>
+
+  <script src="auth.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', ()=>{
+      const session = BBAuth.requireLogin(); if(!session) return;
+
+      const form = document.getElementById('create-request');
+      const listEl = document.getElementById('requests-container');
+
+      function loadRequests(){
+        const existing = JSON.parse(localStorage.getItem('bb_requests')||'[]');
+        listEl.innerHTML = '';
+        if(existing.length===0){ listEl.innerHTML = '<p class="muted">No requests yet.</p>'; return }
+        for(const r of existing){
+          const el = document.createElement('div'); el.className='donor-card';
+          el.innerHTML = `<strong>${r.blood} ${r.rh||''}</strong><div class="meta">${r.location||''}</div><div class="meta">Requested by: ${r.fullname||r.requester||'Anonymous'}</div>`;
+          listEl.appendChild(el);
+        }
+      }
+
+      form.addEventListener('submit', e=>{
+        e.preventDefault();
+        const fd = new FormData(form);
+        const payload = { id: Date.now(), blood: fd.get('blood'), rh: fd.get('rh'), location: fd.get('location'), requester: session.identifier };
+        const arr = JSON.parse(localStorage.getItem('bb_requests')||'[]'); arr.push(payload); localStorage.setItem('bb_requests', JSON.stringify(arr));
+        loadRequests();
+        form.reset();
+      });
+
+      loadRequests();
+    });
+  </script>
+</body>
+</html>

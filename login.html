@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Login — Blood Bond</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="container">
+        <h1 class="brand">Blood Bond</h1>
+          <nav class="nav" aria-label="Main navigation">
+            <a href="index.html">Home</a>
+            <a href="requests.html">Request</a>
+            <a href="profile.html">Profile</a>
+            <a href="campaigns.html">Campaigns</a>
+            <a href="login.html">Login</a>
+            <a id="logout-link" href="#" style="display:none">Logout</a>
+          </nav>
+          <div id="user-info" style="color:var(--muted);font-size:0.9rem;margin-left:1rem"></div>
+      </div>
+    </header>
+
+    <main class="container">
+      <section class="card" style="max-width:480px;margin:2rem auto;">
+        <h2>Sign In</h2>
+        <p class="muted">Sign in as Recipient, Hospital, or Donor using email or phone and password.</p>
+
+        <form id="login-form">
+          <label for="role">I am a</label>
+          <select id="role" name="role">
+            <option value="donor">Donor</option>
+            <option value="recipient">Recipient</option>
+            <option value="hospital">Hospital</option>
+          </select>
+
+          <label for="identifier">Email or Phone</label>
+          <input id="identifier" name="identifier" type="text" placeholder="you@example.com or +1234567890" required />
+
+          <label for="password">Password</label>
+          <input id="password" name="password" type="password" placeholder="••••••" required />
+
+          <button type="submit">Sign In</button>
+        </form>
+
+        <div style="margin-top:0.5rem">
+          <a href="signup.html">Don't have an account? Sign up</a>
+        </div>
+
+        <div id="login-result" class="result" aria-live="polite"></div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container"><small>© Blood Bond</small></div>
+    </footer>
+
+    <script src="auth.js"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', ()=>{
+        // update nav depending on session
+        try{
+          const s = BBAuth.getSession();
+          const loginLink = document.querySelector('.nav a[href="login.html"]');
+          const logoutLink = document.getElementById('logout-link');
+          const userInfoEl = document.getElementById('user-info');
+          if(s){ if(loginLink) loginLink.style.display='none'; if(logoutLink){ logoutLink.style.display='inline-block'; logoutLink.addEventListener('click', e=>{ e.preventDefault(); BBAuth.logout(); }); } if(userInfoEl) userInfoEl.textContent = `${s.role} · ${s.identifier}`; }
+        }catch(e){}
+        const form = document.getElementById('login-form');
+        const result = document.getElementById('login-result');
+
+        form.addEventListener('submit', e=>{
+          e.preventDefault();
+          const role = form.role.value;
+          const id = form.identifier.value.trim();
+          const pw = form.password.value;
+
+          if(!id || !pw){
+            result.textContent = 'Please fill identifier and password.';
+            return;
+          }
+
+          // Verify against stored users
+          const user = BBAuth.findUserByIdentifier(id);
+          if(!user || user.password !== pw || user.role !== role){
+            result.textContent = 'Invalid credentials. Check role, identifier, and password.';
+            return;
+          }
+
+          // Create session
+          const session = {role:user.role, identifier: user.email||user.phone||user.identifier, userId:user.id, loggedAt:Date.now()};
+          BBAuth.saveSession(session);
+          result.textContent = 'Signed in — redirecting...';
+          setTimeout(()=>{ window.location.href = 'index.html#donors'; },600);
+        });
+      });
+    </script>
+  </body>
+</html>

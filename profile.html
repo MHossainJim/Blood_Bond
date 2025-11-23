@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Profile — Blood Bond</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container">
+      <h1 class="brand">Blood Bond</h1>
+      <nav class="nav" aria-label="Main navigation">
+        <a href="index.html">Home</a>
+        <a href="requests.html">Request</a>
+        <a href="profile.html">Profile</a>
+        <a href="campaigns.html">Campaigns</a>
+        <a id="logout-link" href="#" style="display:none">Logout</a>
+      </nav>
+      <div id="user-info" style="color:var(--muted);font-size:0.9rem;margin-left:1rem"></div>
+    </div>
+  </header>
+
+  <main class="container">
+    <h2>Your Profile</h2>
+    <section class="card" style="max-width:700px">
+      <form id="profile-form">
+        <label for="profile-pic">Picture (URL)</label>
+        <input id="profile-pic" name="picture" type="url" />
+
+        <label for="profile-file">Or upload picture</label>
+        <input id="profile-file" name="picture_file" type="file" accept="image/*" />
+        <div style="margin-top:0.5rem">
+          <img id="profile-preview" alt="Profile preview" style="width:84px;height:84px;border-radius:999px;object-fit:cover;border:1px solid rgba(255,255,255,0.04)" />
+        </div>
+
+        <label for="profile-address">Address</label>
+        <input id="profile-address" name="address" type="text" />
+
+        <div style="display:flex;gap:0.5rem;margin-top:0.5rem">
+          <button type="submit">Save</button>
+        </div>
+      </form>
+      <div id="profile-result" class="result"></div>
+    </section>
+
+    <section style="margin-top:1rem">
+      <h3>Donation History</h3>
+      <div id="donation-history" class="donor-grid"></div>
+    </section>
+  </main>
+
+  <footer class="site-footer"><div class="container"><small>© Blood Bond</small></div></footer>
+
+  <script src="auth.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', ()=>{
+      const session = BBAuth.requireLogin(); if(!session) return;
+
+      const profileForm = document.getElementById('profile-form');
+      const profileResult = document.getElementById('profile-result');
+      const historyEl = document.getElementById('donation-history');
+
+      // Load current user data
+      const users = JSON.parse(localStorage.getItem('bb_users')||'[]');
+      const me = users.find(u=>u.id === session.userId) || {};
+      if(me.address) document.getElementById('profile-address').value = me.address;
+      if(me.picture) {
+        document.getElementById('profile-pic').value = me.picture;
+        document.getElementById('profile-preview').src = me.picture;
+      }
+
+      // file upload -> Data URL conversion
+      const fileInput = document.getElementById('profile-file');
+      fileInput.addEventListener('change', async (ev)=>{
+        const f = ev.target.files && ev.target.files[0];
+        if(!f) return;
+        if(!f.type.startsWith('image/')){
+          profileResult.textContent = 'Please upload an image file.'; return;
+        }
+        const dataUrl = await new Promise((res,rej)=>{
+          const r = new FileReader();
+          r.onload = ()=>res(r.result);
+          r.onerror = ()=>rej(new Error('File read error'));
+          r.readAsDataURL(f);
+        });
+        // set preview and set hidden URL field so save will persist
+        document.getElementById('profile-preview').src = dataUrl;
+        document.getElementById('profile-pic').value = dataUrl;
+      });
+
+      profileForm.addEventListener('submit', e=>{
+        e.preventDefault();
+        const users = JSON.parse(localStorage.getItem('bb_users')||'[]');
+        const idx = users.findIndex(u=>u.id===session.userId);
+        if(idx>=0){
+          users[idx].address = document.getElementById('profile-address').value.trim();
+          users[idx].picture = document.getElementById('profile-pic').value.trim();
+          localStorage.setItem('bb_users', JSON.stringify(users));
+          profileResult.textContent = 'Profile updated.';
+          // update UI avatars for current session if present
+          // trigger a re-render on the index page if available
+          try{ if(window.bloodBond && typeof window.bloodBond.renderDonors === 'function') window.bloodBond.renderDonors(); }catch(e){}
+        }
+      });
+
+      // Donation history from bb_donations
+      function loadHistory(){
+        const all = JSON.parse(localStorage.getItem('bb_donations')||'[]');
+        const mine = all.filter(d=>d.requester === session.identifier || d.userId == session.userId);
+        historyEl.innerHTML = '';
+        if(mine.length===0) { historyEl.innerHTML = '<p class="muted">No donation history.</p>'; return }
+        for(const h of mine){ const el=document.createElement('div'); el.className='donor-card'; el.innerHTML=`<strong>${h.blood_group||h.blood}</strong><div class="meta">${h.last_donation||''}</div>`; historyEl.appendChild(el); }
+      }
+
+      loadHistory();
+    });
+  </script>
+</body>
+</html>

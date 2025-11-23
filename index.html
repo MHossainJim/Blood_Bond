@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Blood Bond — Frontend</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container">
+      <h1 class="brand">Blood Bond</h1>
+      <nav class="nav" aria-label="Main navigation">
+        <a href="index.html">Home</a>
+        <a href="requests.html">Request</a>
+        <a href="profile.html">Profile</a>
+        <a href="campaigns.html">Campaigns</a>
+        <a href="login.html">Login</a>
+        <a id="logout-link" href="#" style="display:none">Logout</a>
+      </nav>
+      <div id="user-info" style="color:var(--muted);font-size:0.9rem;margin-left:1rem"></div>
+    </div>
+  </header>
+
+  <main>
+    <section id="home" class="hero">
+      <div class="container hero-inner">
+        <div class="hero-copy">
+          <h2 class="hero-title">Blood Bond — Share Life, Save Lives</h2>
+          <p class="hero-sub">Find donors or request blood quickly. Join the community to get help or give help.</p>
+          <!-- CTAs removed as requested -->
+        </div>
+      </div>
+    </section>
+
+    <section id="donors" class="container donors-section">
+      <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:0.75rem">
+        <div style="display:flex;align-items:center;gap:0.75rem">
+          <button id="view-donors" class="btn-toggle">Donors View</button>
+          <button id="view-recipients" class="btn-toggle">Recipients View</button>
+        </div>
+        <div style="display:flex;align-items:center;gap:0.5rem">
+          <input id="search-q" class="search-input" placeholder="Search name, phone, address, blood" />
+          <label for="filter-bg" class="muted">Blood group:</label>
+          <select id="filter-bg" class="filter-select">
+            <option value="">All</option>
+            <option value="A+">A+</option>
+            <option value="A-">A-</option>
+            <option value="B+">B+</option>
+            <option value="B-">B-</option>
+            <option value="AB+">AB+</option>
+            <option value="AB-">AB-</option>
+            <option value="O+">O+</option>
+            <option value="O-">O-</option>
+          </select>
+        </div>
+      </div>
+      <p class="muted">Toggle between views. Recipients see donors; donors see recipients by default. Use search and blood group filter to narrow results.</p>
+      <div id="donor-list" class="donor-grid" aria-live="polite"></div>
+    </section>
+
+    <!-- app area moved to dedicated pages (Requests, Profile, Campaigns) -->
+
+    <!-- Modal for donate/receive form -->
+    <div id="modal" class="modal" aria-hidden="true">
+      <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+        <button id="modal-close" class="modal-close" aria-label="Close">✕</button>
+        <h3 id="modal-title">Donate / Request</h3>
+        <form id="action-form">
+          <input type="hidden" id="action-type" name="actionType" value="" />
+          <input type="hidden" id="target-donor" name="targetDonor" value="" />
+
+          <label for="nid">NID Number</label>
+          <input id="nid" name="nid" type="text" required />
+
+          <label for="fullname">Full name</label>
+          <input id="fullname" name="fullname" type="text" required />
+
+          <label for="phone">Phone</label>
+          <input id="phone" name="phone" type="tel" required />
+
+          <label for="email">Email</label>
+          <input id="email" name="email" type="email" />
+
+          <label for="address">Address</label>
+          <input id="address" name="address" type="text" />
+
+          <label for="gender">Gender</label>
+          <select id="gender" name="gender">
+            <option value="">Choose</option>
+            <option value="male">Male</option>
+            <option value="female">Female</option>
+            <option value="other">Other</option>
+          </select>
+
+          <label for="blood_group">Blood group</label>
+          <select id="blood_group" name="blood_group" required>
+            <option value="">Choose</option>
+            <option value="A+">A+</option>
+            <option value="A-">A-</option>
+            <option value="B+">B+</option>
+            <option value="B-">B-</option>
+            <option value="AB+">AB+</option>
+            <option value="AB-">AB-</option>
+            <option value="O+">O+</option>
+            <option value="O-">O-</option>
+          </select>
+
+          <label for="age">Age</label>
+          <input id="age" name="age" type="number" min="0" max="120" />
+
+          <label for="last_donation">Last donation date</label>
+          <input id="last_donation" name="last_donation" type="date" />
+
+          <div style="display:flex;gap:0.5rem;margin-top:0.75rem">
+            <button type="submit" class="btn-blood">Submit</button>
+            <button type="button" id="modal-cancel" class="btn-secondary">Cancel</button>
+          </div>
+        </form>
+        <div id="modal-result" class="result" aria-live="polite"></div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <small>© Blood Bond — Frontend scaffold</small>
+    </div>
+  </footer>
+
+  <script src="auth.js"></script>
+  <script src="app.js"></script>
+  <script>
+    // Update header links depending on session
+    try{
+      const s = BBAuth.getSession();
+      const loginLink = document.querySelector('.nav a[href="login.html"]');
+      const logoutLink = document.getElementById('logout-link');
+      const userInfoEl = document.getElementById('user-info');
+      if(s){ if(loginLink) loginLink.style.display='none'; if(logoutLink){ logoutLink.style.display='inline-block'; logoutLink.addEventListener('click', e=>{ e.preventDefault(); BBAuth.logout(); }); } if(userInfoEl) userInfoEl.textContent = `${s.role} · ${s.identifier}`; }
+    }catch(e){}
+  </script>
+</body>
+</html>

@@ -1,0 +1,158 @@
+:root{
+  /* Hospital-themed palette — more vivid blue-green */
+  --bg:#f7fbfa; /* off-white, slightly cool */
+  --surface:#ffffff; /* card surface */
+  --card:#ffffff;
+  --muted:#4f6069; /* muted text */
+  --text:#07202a; /* dark blue-gray text */
+  --brand:#0aa6bf; /* vivid blue-green primary */
+  --brand-2:#00d4b4; /* lighter accent for gradients */
+  --blood:#c62828; /* blood red for important CTAs */
+  --accent:linear-gradient(135deg,var(--brand),var(--brand-2));
+  --muted-surface:rgba(10,166,191,0.04);
+  --elev-1: 0 8px 22px rgba(10,166,191,0.08);
+  --elev-2: 0 14px 40px rgba(10,166,191,0.10);
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  font-family:Inter,Segoe UI,Roboto,system-ui,-apple-system,"Helvetica Neue",Arial;
+  background:var(--bg);
+  color:var(--text);
+  -webkit-font-smoothing:antialiased;
+}
+/* floating card style */
+.card{
+  background:linear-gradient(180deg, var(--surface), rgba(247,251,253,0.98));
+  padding:1rem;border-radius:12px;border:1px solid rgba(6,96,122,0.06);
+  box-shadow:var(--elev-1);transition:transform .22s cubic-bezier(.2,.9,.2,1),box-shadow .22s;
+}
+.card:hover{transform:translateY(-8px);box-shadow:var(--elev-2)}
+.container{max-width:1100px;margin:0 auto;padding:1rem}
+.site-header{border-bottom:1px solid rgba(12,20,30,0.06);} 
+.donor-card{background:linear-gradient(180deg,var(--surface),#fbfeff);padding:0.75rem;border-radius:12px;border:1px solid rgba(6,96,122,0.04);display:flex;flex-direction:column;gap:0.5rem;box-shadow:var(--elev-1);transition:transform .2s,box-shadow .2s}
+.donor-card:hover{transform:translateY(-8px);box-shadow:var(--elev-2)}
+.site-header .container{display:flex;align-items:center;justify-content:space-between;padding:1rem 1rem}
+.search-input{padding:0.6rem 0.75rem;border-radius:10px;border:1px solid rgba(10,166,191,0.12);background:linear-gradient(180deg, #fff, #fbfdfe);color:var(--text);min-width:240px;box-shadow:0 6px 16px rgba(10,166,191,0.04)}
+.search-input:focus{outline:3px solid rgba(10,166,191,0.15);box-shadow:0 14px 36px rgba(10,166,191,0.06);transform:translateY(-1px)}
+.filter-select{padding:0.5rem;border-radius:10px;border:1px solid rgba(6,96,122,0.14);background:linear-gradient(180deg,#eef9f9,#f7fcfb);color:var(--brand);font-weight:600}
+.filter-select:focus{outline:3px solid rgba(6,96,122,0.12)}
+
+/* Card header and details */
+.card-header{display:flex;gap:0.75rem;align-items:center}
+.card-title-row{display:flex;align-items:center;gap:0.6rem;justify-content:space-between}
+.card-title{font-size:0.92rem;color:var(--text);display:none}
+.badge{background:linear-gradient(135deg,var(--brand),var(--brand-2));color:white;padding:0.4rem 0.7rem;border-radius:999px;font-weight:700;font-size:0.95rem}
+.meta-list{list-style:none;padding:0;margin:0.4rem 0 0 0;display:flex;flex-direction:column;gap:0.18rem}
+.meta-item{color:var(--muted);font-size:0.95rem}
+.card .actions{margin-top:0.75rem;display:flex;gap:0.5rem}
+
+/* right-aligned meta (badge + name) */
+.card-meta-right{display:flex;flex-direction:column;align-items:flex-end;gap:0.18rem}
+.card-name{font-size:0.95rem;color:var(--text);font-weight:600}
+/* main name at top of card */
+.card-name-main{font-size:1rem;color:var(--text);font-weight:700}
+.blood-strong{font-weight:700;color:var(--text)}
+
+@media (max-width:600px){
+  .card-meta-right{align-items:flex-start}
+  .card-header{flex-direction:row}
+  .card-name{font-size:0.9rem}
+}
+.btn,button{margin-top:0.5rem;padding:0.6rem 0.9rem;border-radius:10px;background:linear-gradient(135deg,var(--brand),var(--brand-2));color:white;border:0;cursor:pointer;box-shadow:0 8px 20px rgba(6,96,122,0.12);transition:transform .16s,box-shadow .16s}
+.btn:hover{transform:translateY(-3px);box-shadow:0 18px 40px rgba(6,96,122,0.14)}
+.brand{margin:0;font-size:1.25rem}
+.nav a{color:var(--muted);text-decoration:none;margin-left:1rem}
+.nav a:hover{color:var(--brand)}
+.btn-blood{background:linear-gradient(135deg,var(--blood),#a92222);color:white;padding:0.6rem 0.9rem;border-radius:10px;border:0;cursor:pointer;box-shadow:0 8px 22px rgba(198,40,40,0.12);transition:transform .16s,box-shadow .16s}
+.btn-blood:hover{transform:translateY(-3px);box-shadow:0 18px 36px rgba(198,40,40,0.16)}
+.btn-blood:focus{outline:3px solid rgba(198,40,40,0.18);outline-offset:2px}
+.nav a:focus{outline:2px solid rgba(226,75,75,0.15);outline-offset:2px}
+.modal-panel{background:var(--card);padding:1.25rem;border-radius:14px;max-width:560px;width:100%;box-shadow:var(--elev-2);position:relative;transition:transform .18s,box-shadow .18s}
+.modal-panel:hover{transform:translateY(-6px)}
+.hero{padding:1.5rem 0}
+.avatar{width:56px;height:56px;border-radius:999px;object-fit:cover;border:2px solid rgba(6,96,122,0.08);box-shadow:0 6px 14px rgba(6,96,122,0.06)}
+.hero-inner{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.5rem;padding:0 0.5rem;min-height:34vh}
+.hero-copy{max-width:720px;margin:0 auto;text-align:center;padding:0.5rem}
+.hero-title{font-size:clamp(22px,4.5vw,36px);margin:0 0 0.35rem;color:var(--text);line-height:1.04}
+.hero-sub{color:var(--muted);max-width:48ch;margin:0 auto 0.6rem;font-size:0.95rem}
+
+/* CTA buttons in hero */
+.hero-ctas{display:flex;gap:0.75rem;justify-content:center;margin-top:0.5rem}
+.btn-primary{background:var(--brand);color:white;padding:0.6rem 1rem;border-radius:8px;text-decoration:none;font-weight:600;box-shadow:0 8px 24px rgba(6,96,122,0.12)}
+.btn-secondary{background:transparent;border:1px solid rgba(11,127,166,0.08);color:var(--brand);padding:0.55rem 0.9rem;border-radius:8px;text-decoration:none}
+.btn-primary:focus,.btn-secondary:focus{outline:3px solid rgba(226,75,75,0.15);outline-offset:3px}
+.muted{color:var(--muted);font-size:0.95rem}
+.card{/* consolidated card styles defined earlier */}
+form{display:flex;flex-direction:column;gap:0.5rem}
+label{font-size:0.85rem;color:var(--muted)}
+.input,select,input,select,textarea{padding:0.6rem;border-radius:6px;border:1px solid rgba(11,127,166,0.12);background:transparent;color:var(--text)}
+.btn-comment{/* legacy rule removed; primary .btn defined above */}
+.result{margin-top:0.5rem;color:var(--muted)}
+.features{padding:2rem 1rem}
+.site-footer{border-top:1px solid rgba(11,127,166,0.06);padding:1rem;margin-top:2rem}
+
+/* Responsive */
+@media (max-width:900px){
+  .hero-inner{grid-template-columns:1fr;}
+}
+
+/* Donor grid */
+.donor-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-top:1rem}
+.donor-card{background:var(--card);padding:0.75rem;border-radius:8px;border:1px solid rgba(11,127,166,0.04);display:flex;flex-direction:column;gap:0.5rem}
+.donor-card .meta{color:var(--muted);font-size:0.95rem}
+.donor-card .actions{margin-top:auto;display:flex;gap:0.5rem}
+
+@media (max-width:1000px){
+  .donor-grid{grid-template-columns:repeat(2,1fr)}
+}
+@media (max-width:600px){
+  .donor-grid{grid-template-columns:1fr}
+}
+
+/* Modal */
+.modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:linear-gradient(rgba(11,127,166,0.06),rgba(11,127,166,0.06));z-index:60}
+.modal[aria-hidden="false"]{display:flex}
+.modal-panel{background:var(--card);padding:1rem;border-radius:10px;max-width:560px;width:100%;box-shadow:0 12px 40px rgba(11,127,166,0.06);position:relative}
+.modal-close{position:absolute;right:8px;top:8px;background:transparent;border:0;color:var(--muted);font-size:1rem;cursor:pointer}
+
+/* Toggle buttons */
+.btn-toggle{background:transparent;border:1px solid rgba(11,127,166,0.06);padding:0.4rem 0.6rem;border-radius:6px;color:var(--muted);cursor:pointer}
+.btn-toggle.active{background:rgba(11,127,166,0.04);color:var(--text);border-color:rgba(11,127,166,0.12)}
+
+.actions button{padding:0.4rem 0.6rem;font-size:0.95rem}
+
+/* Focus styles for keyboard users */
+button:focus, input:focus, select:focus, a:focus, textarea:focus{
+  outline:3px solid rgba(11,127,166,0.18);
+  outline-offset:2px;
+}
+
+/* Modal adjustments for small screens */
+.modal-panel{max-height:90vh;overflow:auto}
+
+/* Small nav wrap */
+.site-header .container{flex-wrap:wrap}
+
+/* Avatar */
+.avatar{width:56px;height:56px;border-radius:999px;object-fit:cover;border:2px solid rgba(11,127,166,0.08)}
+
+/* special blood CTA style */
+.btn-blood{background:var(--blood);box-shadow:0 6px 18px rgba(198,40,40,0.12)}
+.btn-blood{background:var(--blood);color:white;padding:0.6rem 0.9rem;border-radius:6px;border:0;cursor:pointer;box-shadow:0 6px 18px rgba(198,40,40,0.12)}
+.btn-blood:hover{filter:brightness(0.96)}
+.btn-blood:focus{outline:3px solid rgba(198,40,40,0.18);outline-offset:2px}
+
+/* Improve input contrast and muted color for readability */
+.input,select,input,select,textarea{border:1px solid rgba(11,127,166,0.16)}
+.muted{color:#47555f}
+
+/* Slightly reduce hero subtitle size for better balance on small screens */
+.hero-sub{font-size:0.92rem}
+
+/* Make donor-card meta clearer on small screens */
+.donor-card .meta{color:var(--muted);font-size:0.92rem}
+.donor-card{display:flex;flex-direction:row;gap:0.75rem;align-items:flex-start}
+.donor-card .actions{margin-left:auto;display:flex;gap:0.5rem}
+

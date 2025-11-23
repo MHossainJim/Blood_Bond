@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Campaigns — Blood Bond</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container">
+      <h1 class="brand">Blood Bond</h1>
+      <nav class="nav" aria-label="Main navigation">
+        <a href="index.html">Home</a>
+        <a href="requests.html">Request</a>
+        <a href="profile.html">Profile</a>
+        <a href="campaigns.html">Campaigns</a>
+        <a id="logout-link" href="#" style="display:none">Logout</a>
+      </nav>
+      <div id="user-info" style="color:var(--muted);font-size:0.9rem;margin-left:1rem"></div>
+    </div>
+  </header>
+
+  <main class="container">
+    <h2>Donation Campaigns</h2>
+    <p class="muted">Upcoming blood donation campaigns. Register to participate.</p>
+
+    <section id="campaign-list" class="donor-grid"></section>
+  </main>
+
+  <footer class="site-footer"><div class="container"><small>© Blood Bond</small></div></footer>
+
+  <script src="auth.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', ()=>{
+      const session = BBAuth.requireLogin(); if(!session) return;
+
+      const campaigns = JSON.parse(localStorage.getItem('bb_campaigns')||'[]');
+      const list = document.getElementById('campaign-list');
+      if(campaigns.length===0){ list.innerHTML = '<p class="muted">No campaigns yet.</p>'; return }
+      for(const c of campaigns){
+        const el = document.createElement('div'); el.className='donor-card';
+        el.innerHTML = `<strong>${c.title}</strong><div class="meta">${c.location} — ${c.date}</div><div style="margin-top:0.5rem"><button data-id="${c.id}" class="btn btn-register">Register</button></div>`;
+        list.appendChild(el);
+      }
+
+      list.addEventListener('click', e=>{
+        const btn = e.target.closest && e.target.closest('button.btn-register');
+        if(!btn) return;
+        const id = btn.getAttribute('data-id');
+        const regs = JSON.parse(localStorage.getItem('bb_campaign_regs')||'[]');
+        regs.push({id:Date.now(), campaignId:id, user:session.identifier});
+        localStorage.setItem('bb_campaign_regs', JSON.stringify(regs));
+        btn.textContent = 'Registered'; btn.disabled = true;
+      });
+    });
+  </script>
+</body>
+</html>

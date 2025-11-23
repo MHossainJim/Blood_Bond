@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Sign Up — Blood Bond</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="container">
+        <h1 class="brand">Blood Bond</h1>
+        <nav class="nav" aria-label="Main navigation">
+          <a href="index.html">Home</a>
+          <a href="requests.html">Request</a>
+          <a href="profile.html">Profile</a>
+          <a href="campaigns.html">Campaigns</a>
+          <a href="login.html">Login</a>
+          <a id="logout-link" href="#" style="display:none">Logout</a>
+        </nav>
+        <div id="user-info" style="color:var(--muted);font-size:0.9rem;margin-left:1rem"></div>
+      </div>
+    </header>
+
+    <main class="container">
+      <section class="card" style="max-width:680px;margin:1.5rem auto;">
+        <h2>Create account</h2>
+        <p class="muted">Provide personal details to register as Donor, Recipient, or Hospital.</p>
+
+        <form id="signup-form">
+          <label for="role">I am a</label>
+          <select id="role" name="role">
+            <option value="donor">Donor</option>
+            <option value="recipient">Recipient</option>
+            <option value="hospital">Hospital</option>
+          </select>
+
+          <label for="name">Full name</label>
+          <input id="name" name="name" type="text" required />
+
+          <label for="gender">Gender</label>
+          <select id="gender" name="gender">
+            <option value="">Choose</option>
+            <option value="male">Male</option>
+            <option value="female">Female</option>
+            <option value="other">Other</option>
+          </select>
+
+          <label for="address">Address</label>
+          <input id="address" name="address" type="text" />
+
+          <label for="phone">Phone</label>
+          <input id="phone" name="phone" type="tel" required />
+
+          <label for="email">Email</label>
+          <input id="email" name="email" type="email" />
+
+          <label for="nid">NID number</label>
+          <input id="nid" name="nid" type="text" />
+
+          <label for="blood_group">Blood group</label>
+          <select id="blood_group" name="blood_group">
+            <option value="">Choose</option>
+            <option value="A+">A+</option>
+            <option value="A-">A-</option>
+            <option value="B+">B+</option>
+            <option value="B-">B-</option>
+            <option value="AB+">AB+</option>
+            <option value="AB-">AB-</option>
+            <option value="O+">O+</option>
+            <option value="O-">O-</option>
+          </select>
+
+          <label for="rh">Rh factor</label>
+          <select id="rh" name="rh">
+            <option value="">Choose</option>
+            <option value="positive">+</option>
+            <option value="negative">-</option>
+          </select>
+
+          <label for="password">Password</label>
+          <input id="password" name="password" type="password" required />
+
+          <div style="display:flex;gap:0.5rem;margin-top:0.75rem">
+            <button type="submit">Create Account</button>
+            <a href="login.html" style="align-self:center;color:var(--muted)">Back to login</a>
+          </div>
+        </form>
+
+        <div id="signup-result" class="result" aria-live="polite"></div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container"><small>© Blood Bond</small></div>
+    </footer>
+
+    <script src="auth.js"></script>
+    <script>
+      // update nav depending on session
+      try{
+        const s = BBAuth.getSession();
+        const loginLink = document.querySelector('.nav a[href="login.html"]');
+        const logoutLink = document.getElementById('logout-link');
+        const userInfoEl = document.getElementById('user-info');
+        if(s){ if(loginLink) loginLink.style.display='none'; if(logoutLink){ logoutLink.style.display='inline-block'; logoutLink.addEventListener('click', e=>{ e.preventDefault(); BBAuth.logout(); }); } if(userInfoEl) userInfoEl.textContent = `${s.role} · ${s.identifier}`; }
+      }catch(e){}
+      document.addEventListener('DOMContentLoaded', ()=>{
+        const form = document.getElementById('signup-form');
+        const result = document.getElementById('signup-result');
+
+        form.addEventListener('submit', e=>{
+          e.preventDefault();
+          const data = {
+            id: Date.now(),
+            role: form.role.value,
+            name: form.name.value.trim(),
+            gender: form.gender.value,
+            address: form.address.value.trim(),
+            phone: form.phone.value.trim(),
+            email: form.email.value.trim(),
+            nid: form.nid.value.trim(),
+            blood_group: form.blood_group.value,
+            rh: form.rh.value,
+            password: form.password.value
+          };
+
+          if(!data.name || !data.phone || !data.password){
+            result.textContent = 'Please fill required fields: name, phone, password.';
+            return;
+          }
+
+          // Check for existing identifier collision
+          const existing = BBAuth.findUserByIdentifier(data.email) || BBAuth.findUserByIdentifier(data.phone);
+          if(existing){ result.textContent = 'An account with this email or phone already exists.'; return; }
+
+          BBAuth.saveUser(data);
+          // create session and redirect to home
+          BBAuth.saveSession({role:data.role, identifier:data.email||data.phone, userId:data.id, loggedAt:Date.now()});
+          result.style.color = '#9fe8c0';
+          result.textContent = 'Account created — redirecting to home...';
+          setTimeout(()=> window.location.href = 'index.html', 700);
+        });
+      });
+    </script>
+  </body>
+</html>
