@@ -12,54 +12,24 @@
       <h1 class="brand">Blood Bond</h1>
       <nav class="nav" aria-label="Main navigation">
         <a href="index.html">Home</a>
-        <a href="requests.html">Request</a>
-        <a href="profile.html">Profile</a>
+        <a href="requests.html" class="active">Requests</a>
         <a href="campaigns.html">Campaigns</a>
-        <a id="logout-link" href="#" style="display:none">Logout</a>
       </nav>
-      <div id="user-info" style="color:var(--muted);font-size:0.9rem;margin-left:1rem"></div>
+      <div style="display:flex;align-items:center;gap:1rem">
+        <div id="user-info" style="color:var(--muted);font-size:0.9rem"></div>
+        <a href="profile.html"><img src="https://i.pravatar.cc/80" alt="Profile" class="avatar" style="width:40px;height:40px" /></a>
+      </div>
     </div>
   </header>
 
-  <main class="container">
-    <h2>All Requests</h2>
-    <p class="muted">View existing requests or create a new one.</p>
-
-    <section class="card" style="margin:1rem 0;">
-      <h3>Create Request</h3>
-      <form id="create-request">
-        <label for="req_blood">Blood group</label>
-        <select id="req_blood" name="blood" required>
-          <option value="">Choose</option>
-          <option value="A+">A+</option>
-          <option value="A-">A-</option>
-          <option value="B+">B+</option>
-          <option value="B-">B-</option>
-          <option value="AB+">AB+</option>
-          <option value="AB-">AB-</option>
-          <option value="O+">O+</option>
-          <option value="O-">O-</option>
-        </select>
-
-        <label for="req_rh">Rh factor</label>
-        <select id="req_rh" name="rh">
-          <option value="">Choose</option>
-          <option value="positive">+</option>
-          <option value="negative">-</option>
-        </select>
-
-        <label for="req_location">Location / Hospital</label>
-        <input id="req_location" name="location" type="text" required />
-
-        <div style="display:flex;gap:0.5rem;margin-top:0.5rem">
-          <button type="submit" class="btn-blood">Submit Request</button>
-        </div>
-      </form>
-    </section>
+  <main class="container" style="padding-top:2rem">
+    <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:0.75rem;margin-bottom:2rem">
+      <button id="view-incoming" class="btn-toggle active">Incoming Requests</button>
+      <button id="view-sent" class="btn-toggle">My Sent Requests</button>
+    </div>
 
     <section id="requests-list">
-      <h3>Existing Requests</h3>
-      <div id="requests-container" class="donor-grid"></div>
+      <div id="requests-container"></div>
     </section>
   </main>
 
@@ -70,28 +40,65 @@
     document.addEventListener('DOMContentLoaded', ()=>{
       const session = BBAuth.requireLogin(); if(!session) return;
 
-      const form = document.getElementById('create-request');
       const listEl = document.getElementById('requests-container');
+      const viewIncomingBtn = document.getElementById('view-incoming');
+      const viewSentBtn = document.getElementById('view-sent');
+      let currentView = 'incoming';
+
+      // Sample request data
+      const sampleRequests = [
+        {id:1, name:'Anita D.', blood:'B+', location:'Square Hospital', time:'2 hours ago', avatar:'https://i.pravatar.cc/150?img=47'},
+        {id:2, name:'Rahul S.', blood:'B+', location:'Square Hospital', time:'2 hours ago', avatar:'https://i.pravatar.cc/150?img=12'},
+        {id:3, name:'Rahul S.', blood:'B+', location:'Square Hospital', time:'2 hours ago', avatar:'https://i.pravatar.cc/150?img=13'},
+        {id:4, name:'Rahul S.', blood:'A+', location:'Square Hospital', time:'2 hours ago', avatar:'https://i.pravatar.cc/150?img=14'},
+        {id:5, name:'Anita D.', blood:'B+', location:'Square Hospital', time:'2 hours ago', avatar:'https://i.pravatar.cc/150?img=48'}
+      ];
 
       function loadRequests(){
-        const existing = JSON.parse(localStorage.getItem('bb_requests')||'[]');
         listEl.innerHTML = '';
-        if(existing.length===0){ listEl.innerHTML = '<p class="muted">No requests yet.</p>'; return }
-        for(const r of existing){
-          const el = document.createElement('div'); el.className='donor-card';
-          el.innerHTML = `<strong>${r.blood} ${r.rh||''}</strong><div class="meta">${r.location||''}</div><div class="meta">Requested by: ${r.fullname||r.requester||'Anonymous'}</div>`;
+        const requests = currentView === 'incoming' ? sampleRequests : [];
+        
+        if(requests.length === 0){ 
+          listEl.innerHTML = '<p class="muted" style="text-align:center;padding:2rem">No requests yet.</p>'; 
+          return;
+        }
+        
+        for(const r of requests){
+          const el = document.createElement('div');
+          el.className = 'request-card';
+          el.innerHTML = `
+            <img class="avatar" src="${r.avatar}" alt="${r.name}" />
+            <div class="request-info">
+              <h3 class="request-name">${r.name}</h3>
+              <div class="request-details">Urgent: ${r.blood} Blood needed at ${r.location}</div>
+              <div class="request-time">${r.time}</div>
+            </div>
+            <div class="request-actions">
+              <button class="btn-accept" onclick="acceptRequest(${r.id})">Accept</button>
+              <button class="btn-reject" onclick="rejectRequest(${r.id})">Reject</button>
+            </div>
+          `;
           listEl.appendChild(el);
         }
       }
 
-      form.addEventListener('submit', e=>{
-        e.preventDefault();
-        const fd = new FormData(form);
-        const payload = { id: Date.now(), blood: fd.get('blood'), rh: fd.get('rh'), location: fd.get('location'), requester: session.identifier };
-        const arr = JSON.parse(localStorage.getItem('bb_requests')||'[]'); arr.push(payload); localStorage.setItem('bb_requests', JSON.stringify(arr));
+      function setView(view){
+        currentView = view;
+        viewIncomingBtn.classList.toggle('active', view === 'incoming');
+        viewSentBtn.classList.toggle('active', view === 'sent');
         loadRequests();
-        form.reset();
-      });
+      }
+
+      viewIncomingBtn.addEventListener('click', ()=> setView('incoming'));
+      viewSentBtn.addEventListener('click', ()=> setView('sent'));
+
+      window.acceptRequest = function(id){
+        alert('Request accepted! ID: ' + id);
+      };
+
+      window.rejectRequest = function(id){
+        alert('Request rejected! ID: ' + id);
+      };
 
       loadRequests();
     });

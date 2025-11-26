@@ -12,42 +12,68 @@
       <h1 class="brand">Blood Bond</h1>
       <nav class="nav" aria-label="Main navigation">
         <a href="index.html">Home</a>
-        <a href="requests.html">Request</a>
-        <a href="profile.html">Profile</a>
-        <a href="campaigns.html">Campaigns</a>
-        <a id="logout-link" href="#" style="display:none">Logout</a>
+        <a href="requests.html">Requests</a>
+        <a href="campaigns.html" class="active">Campaigns</a>
       </nav>
-      <div id="user-info" style="color:var(--muted);font-size:0.9rem;margin-left:1rem"></div>
+      <div style="display:flex;align-items:center;gap:1rem">
+        <div id="user-info" style="color:var(--muted);font-size:0.9rem"></div>
+        <a href="profile.html"><img src="https://i.pravatar.cc/80" alt="Profile" class="avatar" style="width:40px;height:40px" /></a>
+      </div>
     </div>
   </header>
 
-  <main class="container">
-    <h2>Your Profile</h2>
-    <section class="card" style="max-width:700px">
+  <main class="container" style="padding-top:2rem;max-width:1000px">
+    <!-- Profile Header Card -->
+    <div class="profile-header">
+      <div class="profile-avatar">
+        <img id="profile-avatar-img" class="avatar" src="https://i.pravatar.cc/150?img=12" alt="Profile" />
+        <label for="profile-file" class="profile-edit-icon" style="cursor:pointer" title="Edit photo">
+          ✏️
+        </label>
+        <input id="profile-file" name="picture_file" type="file" accept="image/*" style="display:none" />
+      </div>
+      <div class="profile-info">
+        <h1 class="profile-name" id="profile-name">Rahul S.</h1>
+        <span class="blood-badge" id="profile-blood">A+</span>
+        <div class="profile-willing">
+          <span style="color:var(--muted);font-weight:500">Willing to Donate</span>
+          <label class="toggle-switch">
+            <input type="checkbox" id="willing-toggle" checked />
+            <span class="toggle-slider"></span>
+          </label>
+          <span style="color:var(--text);font-weight:600">ON</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Profile Form -->
+    <section class="card">
+      <h3 style="margin-top:0">Full Address</h3>
       <form id="profile-form">
-        <label for="profile-pic">Picture (URL)</label>
-        <input id="profile-pic" name="picture" type="url" />
-
-        <label for="profile-file">Or upload picture</label>
-        <input id="profile-file" name="picture_file" type="file" accept="image/*" />
-        <div style="margin-top:0.5rem">
-          <img id="profile-preview" alt="Profile preview" style="width:84px;height:84px;border-radius:999px;object-fit:cover;border:1px solid rgba(255,255,255,0.04)" />
-        </div>
-
-        <label for="profile-address">Address</label>
-        <input id="profile-address" name="address" type="text" />
-
-        <div style="display:flex;gap:0.5rem;margin-top:0.5rem">
-          <button type="submit">Save</button>
-        </div>
+        <input type="hidden" id="profile-pic" name="picture" />
+        <input id="profile-address" name="address" type="text" placeholder="Enter your full address" style="background:var(--bg);border:1px solid var(--border);padding:1rem;border-radius:8px" />
+        <button type="submit" class="btn-blood" style="width:auto;align-self:flex-end;margin-top:1rem">Save Changes</button>
       </form>
       <div id="profile-result" class="result"></div>
     </section>
 
-    <section style="margin-top:1rem">
-      <h3>Donation History</h3>
-      <div id="donation-history" class="donor-grid"></div>
+    <!-- Email and Phone (read-only) -->
+    <section class="card">
+      <h3 style="margin-top:0">Email Address</h3>
+      <div style="background:var(--bg);border:1px solid var(--border);padding:1rem;border-radius:8px;display:flex;align-items:center;gap:0.5rem;color:var(--muted)">
+        🔒 <span id="profile-email">rahul@example.com</span>
+      </div>
+
+      <h3 style="margin-top:1.5rem">Phone Number</h3>
+      <div style="background:var(--bg);border:1px solid var(--border);padding:1rem;border-radius:8px;display:flex;align-items:center;gap:0.5rem;color:var(--muted)">
+        🔒 <span id="profile-phone">+88017...33481</span>
+      </div>
     </section>
+
+    <!-- Logout Button -->
+    <div style="text-align:center;margin-top:2rem">
+      <button id="logout-btn" class="btn-secondary" style="width:100%;max-width:600px;border-color:var(--brand);color:var(--brand);padding:1rem;font-size:1rem">Log Out</button>
+    </div>
   </main>
 
   <footer class="site-footer"><div class="container"><small>© Blood Bond</small></div></footer>
@@ -59,15 +85,22 @@
 
       const profileForm = document.getElementById('profile-form');
       const profileResult = document.getElementById('profile-result');
-      const historyEl = document.getElementById('donation-history');
+      const willingToggle = document.getElementById('willing-toggle');
+      const logoutBtn = document.getElementById('logout-btn');
 
       // Load current user data
       const users = JSON.parse(localStorage.getItem('bb_users')||'[]');
       const me = users.find(u=>u.id === session.userId) || {};
+      
+      // Update profile display
+      if(me.name) document.getElementById('profile-name').textContent = me.name;
+      if(me.blood_group) document.getElementById('profile-blood').textContent = me.blood_group;
+      if(me.email) document.getElementById('profile-email').textContent = me.email;
+      if(me.phone) document.getElementById('profile-phone').textContent = me.phone;
       if(me.address) document.getElementById('profile-address').value = me.address;
       if(me.picture) {
         document.getElementById('profile-pic').value = me.picture;
-        document.getElementById('profile-preview').src = me.picture;
+        document.getElementById('profile-avatar-img').src = me.picture;
       }
 
       // file upload -> Data URL conversion
@@ -76,7 +109,9 @@
         const f = ev.target.files && ev.target.files[0];
         if(!f) return;
         if(!f.type.startsWith('image/')){
-          profileResult.textContent = 'Please upload an image file.'; return;
+          profileResult.textContent = 'Please upload an image file.'; 
+          profileResult.style.color = '#ef4444';
+          return;
         }
         const dataUrl = await new Promise((res,rej)=>{
           const r = new FileReader();
@@ -85,8 +120,16 @@
           r.readAsDataURL(f);
         });
         // set preview and set hidden URL field so save will persist
-        document.getElementById('profile-preview').src = dataUrl;
+        document.getElementById('profile-avatar-img').src = dataUrl;
         document.getElementById('profile-pic').value = dataUrl;
+        
+        // Auto-save picture
+        const users = JSON.parse(localStorage.getItem('bb_users')||'[]');
+        const idx = users.findIndex(u=>u.id===session.userId);
+        if(idx>=0){
+          users[idx].picture = dataUrl;
+          localStorage.setItem('bb_users', JSON.stringify(users));
+        }
       });
 
       profileForm.addEventListener('submit', e=>{
@@ -97,23 +140,26 @@
           users[idx].address = document.getElementById('profile-address').value.trim();
           users[idx].picture = document.getElementById('profile-pic').value.trim();
           localStorage.setItem('bb_users', JSON.stringify(users));
-          profileResult.textContent = 'Profile updated.';
-          // update UI avatars for current session if present
-          // trigger a re-render on the index page if available
-          try{ if(window.bloodBond && typeof window.bloodBond.renderDonors === 'function') window.bloodBond.renderDonors(); }catch(e){}
+          profileResult.textContent = 'Profile updated successfully!';
+          profileResult.style.color = '#4ade80';
+          setTimeout(() => profileResult.textContent = '', 3000);
         }
       });
 
-      // Donation history from bb_donations
-      function loadHistory(){
-        const all = JSON.parse(localStorage.getItem('bb_donations')||'[]');
-        const mine = all.filter(d=>d.requester === session.identifier || d.userId === session.userId);
-        historyEl.innerHTML = '';
-        if(mine.length===0) { historyEl.innerHTML = '<p class="muted">No donation history.</p>'; return }
-        for(const h of mine){ const el=document.createElement('div'); el.className='donor-card'; el.innerHTML=`<strong>${h.blood_group||h.blood}</strong><div class="meta">${h.last_donation||''}</div>`; historyEl.appendChild(el); }
-      }
+      // Willing to donate toggle
+      willingToggle.addEventListener('change', (e)=>{
+        const users = JSON.parse(localStorage.getItem('bb_users')||'[]');
+        const idx = users.findIndex(u=>u.id===session.userId);
+        if(idx>=0){
+          users[idx].willingToDonate = e.target.checked;
+          localStorage.setItem('bb_users', JSON.stringify(users));
+        }
+      });
 
-      loadHistory();
+      // Logout
+      logoutBtn.addEventListener('click', ()=>{
+        BBAuth.logout();
+      });
     });
   </script>
 </body>

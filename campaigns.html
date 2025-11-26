@@ -12,20 +12,19 @@
       <h1 class="brand">Blood Bond</h1>
       <nav class="nav" aria-label="Main navigation">
         <a href="index.html">Home</a>
-        <a href="requests.html">Request</a>
-        <a href="profile.html">Profile</a>
-        <a href="campaigns.html">Campaigns</a>
-        <a id="logout-link" href="#" style="display:none">Logout</a>
+        <a href="requests.html">Requests</a>
+        <a href="campaigns.html" class="active">Campaigns</a>
       </nav>
-      <div id="user-info" style="color:var(--muted);font-size:0.9rem;margin-left:1rem"></div>
+      <div style="display:flex;align-items:center;gap:1rem">
+        <div id="user-info" style="color:var(--muted);font-size:0.9rem"></div>
+        <a href="profile.html"><img src="https://i.pravatar.cc/80" alt="Profile" class="avatar" style="width:40px;height:40px" /></a>
+      </div>
     </div>
   </header>
 
-  <main class="container">
-    <h2>Donation Campaigns</h2>
-    <p class="muted">Upcoming blood donation campaigns. Register to participate.</p>
-
-    <section id="campaign-list" class="donor-grid"></section>
+  <main class="container campaigns-page" style="padding-top:2rem;min-height:60vh">
+    <h2 style="text-align:center;margin-bottom:2.5rem">Donation Campaigns</h2>
+    <section id="campaign-list" class="campaign-grid"></section>
   </main>
 
   <footer class="site-footer"><div class="container"><small>© Blood Bond</small></div></footer>

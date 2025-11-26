@@ -103,21 +103,19 @@ document.addEventListener('DOMContentLoaded', ()=>{
       const altText = `Avatar of ${d.name}`;
 
       card.innerHTML = `
-        <div class="person-top">
+        <div style="display:flex;flex-direction:column;align-items:center;text-align:center;gap:1rem">
           <img class="avatar" src="${avatarSrc}" alt="${escapeHtml(altText)}" />
-          <div class="person-main">
-            <div class="person-header">
-              <strong class="person-name">${escapeHtml(d.name)}</strong>
-              <span class="person-blood">${escapeHtml(bloodLabel)}</span>
+          <div style="width:100%">
+            <div style="display:flex;align-items:center;justify-content:center;gap:0.5rem;margin-bottom:0.5rem">
+              <strong class="donor-name">${escapeHtml(d.name)}</strong>
+              <span class="blood-badge">${escapeHtml(bloodLabel)}</span>
             </div>
-            <div class="person-details">
-              <div class="person-meta"><span class="label">Location</span><div class="value">${escapeHtml(d.address||secondary||'')}</div></div>
-              <div class="person-meta"><span class="label">Phone</span><div class="value">${escapeHtml(d.phone||'')}</div></div>
-            </div>
+            <div class="donor-location">${escapeHtml(d.address ? 'Public location' : 'Public location')}</div>
+            <div class="donor-location" style="font-weight:500;color:var(--text)">${escapeHtml(d.address||secondary||'Mirpur, Dhaka')}</div>
           </div>
-        </div>
-        <div class="actions">
-          ${ renderActionButtons(currentView, session, d) }
+          <div class="actions" style="width:100%">
+            ${ renderActionButtons(currentView, session, d) }
+          </div>
         </div>
       `;
       // store id on card buttons after creation
@@ -129,27 +127,27 @@ document.addEventListener('DOMContentLoaded', ()=>{
   }
 
   function renderActionButtons(view, session, person){
-    // Donor cards should only show a Request button
+    // When viewing donors (as recipient) -> show Request button
     if(view === 'donors'){
-      return `<button class="btn-blood" data-action="receive" aria-label="Request blood from ${escapeHtml(person && person.name)}">Request</button>`;
+      return `<button class="btn-blood" data-action="receive" aria-label="Request blood from ${escapeHtml(person && person.name)}" style="width:100%">Request</button>`;
     }
-    // If viewing recipients and current user is donor -> show Donate
-    if(view === 'recipients' && session && session.role === 'donor'){
-      return `<button class="btn" data-action="donate" aria-label="Offer blood to ${escapeHtml(person && person.name)}">Donate</button>`;
+    // When viewing recipients (as donor) -> show Donate button
+    if(view === 'recipients'){
+      return `<button class="btn-blood" data-action="donate" aria-label="Donate blood to ${escapeHtml(person && person.name)}" style="width:100%">Donate</button>`;
     }
-    // Otherwise show both contact options for other cases
-    return `<button class="btn" data-action="donate" aria-label="Donate to ${escapeHtml(person && person.name)}">Donate</button><button class="btn-blood" data-action="receive" aria-label="Request from ${escapeHtml(person && person.name)}">Request</button>`;
+    // Fallback (should not happen with current logic)
+    return `<button class="btn-blood" data-action="donate" aria-label="Action for ${escapeHtml(person && person.name)}" style="width:100%">Request</button>`;
   }
 
   // simple escape for inserting names into aria-labels
   function escapeHtml(s){ if(!s) return ''; return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
   // initial render and UI state
-  function setView(v){ currentView = v; if(viewDonorsBtn) viewDonorsBtn.classList.toggle('active', v==='donors'); if(viewRecipientsBtn) viewRecipientsBtn.classList.toggle('active', v==='recipients'); renderList(); }
+  function setView(v){ currentView = v; if(viewDonorsBtn) viewDonorsBtn.classList.toggle('active', v==='recipients'); if(viewRecipientsBtn) viewRecipientsBtn.classList.toggle('active', v==='donors'); renderList(); }
   setView(currentView);
 
-  if(viewDonorsBtn) viewDonorsBtn.addEventListener('click', ()=> setView('donors'));
-  if(viewRecipientsBtn) viewRecipientsBtn.addEventListener('click', ()=> setView('recipients'));
+  if(viewDonorsBtn) viewDonorsBtn.addEventListener('click', ()=> setView('recipients'));
+  if(viewRecipientsBtn) viewRecipientsBtn.addEventListener('click', ()=> setView('donors'));
   if(filterBg) filterBg.addEventListener('change', ()=> renderList());
   if(searchQ) searchQ.addEventListener('input', ()=> renderList());
 

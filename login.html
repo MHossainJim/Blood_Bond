@@ -6,85 +6,66 @@
     <title>Login — Blood Bond</title>
     <link rel="stylesheet" href="styles.css">
   </head>
-  <body>
-    <header class="site-header">
-      <div class="container">
-        <h1 class="brand">Blood Bond</h1>
-          <nav class="nav" aria-label="Main navigation">
-            <a href="index.html">Home</a>
-            <a href="requests.html">Request</a>
-            <a href="profile.html">Profile</a>
-            <a href="campaigns.html">Campaigns</a>
-            <a href="login.html">Login</a>
-            <a id="logout-link" href="#" style="display:none">Logout</a>
-          </nav>
-          <div id="user-info" style="color:var(--muted);font-size:0.9rem;margin-left:1rem"></div>
-      </div>
-    </header>
-
-    <main class="container">
-      <section class="card" style="max-width:480px;margin:2rem auto;">
-        <h2>Sign In</h2>
-        <p class="muted">Sign in as Recipient, Hospital, or Donor using email or phone and password.</p>
-
-        <form id="login-form">
-          <label for="role">I am a</label>
-          <select id="role" name="role">
-            <option value="donor">Donor</option>
-            <option value="recipient">Recipient</option>
-            <option value="hospital">Hospital</option>
-          </select>
-
-          <label for="identifier">Email or Phone</label>
-          <input id="identifier" name="identifier" type="text" placeholder="you@example.com or +1234567890" required />
-
-          <label for="password">Password</label>
-          <input id="password" name="password" type="password" placeholder="••••••" required />
-
-          <button type="submit">Sign In</button>
-        </form>
-
-        <div style="margin-top:0.5rem">
-          <a href="signup.html">Don't have an account? Sign up</a>
+  <body style="background:var(--bg)">
+    <div class="auth-container">
+      <div style="display:flex;align-items:center;gap:3rem;max-width:1200px;width:100%">
+        <!-- Left side - Hero image and text -->
+        <div class="hero-copy" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem">
+          <img src="Untitled design (4).png" alt="Blood drops" style="width:100%;max-width:400px;margin-bottom:2rem;object-fit:contain" />
+          <h2 class="hero-title" style="text-align:center"><span class="brand-name">Blood Bond:</span> Connect. Donate. Save Lives.</h2>
         </div>
 
-        <div id="login-result" class="result" aria-live="polite"></div>
-      </section>
-    </main>
+        <!-- Right side - Login form -->
+        <div class="auth-form-wrapper" style="flex:1">
+          <div class="auth-header">
+            <h1 class="brand" style="justify-content:center">Blood Bond</h1><br>
+            <div class="auth-toggle">
+              <button type="button" class="active">Log In</button>
+              <button type="button" onclick="window.location.href='signup.html'">Sign Up</button>
+            </div>
+          </div>
 
-    <footer class="site-footer">
-      <div class="container"><small>© Blood Bond</small></div>
-    </footer>
+          <form id="login-form">
+            <input id="identifier" name="identifier" type="text" placeholder="Email Address" required />
+            <input id="password" name="password" type="password" placeholder="Password" required />
+            
+            <input type="hidden" id="role" name="role" value="donor" />
+
+            <button type="submit" class="btn-blood" style="width:100%;margin-top:1rem">Log In</button>
+          </form>
+
+          <div class="auth-link">
+            Don't have an account? <a href="signup.html">Sign Up</a>
+          </div>
+
+          <div id="login-result" class="result" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
 
     <script src="auth.js"></script>
     <script>
       document.addEventListener('DOMContentLoaded', ()=>{
-        // update nav depending on session
-        try{
-          const s = BBAuth.getSession();
-          const loginLink = document.querySelector('.nav a[href="login.html"]');
-          const logoutLink = document.getElementById('logout-link');
-          const userInfoEl = document.getElementById('user-info');
-          if(s){ if(loginLink) loginLink.style.display='none'; if(logoutLink){ logoutLink.style.display='inline-block'; logoutLink.addEventListener('click', e=>{ e.preventDefault(); BBAuth.logout(); }); } if(userInfoEl) userInfoEl.textContent = `${s.role} · ${s.identifier}`; }
-        }catch(e){}
         const form = document.getElementById('login-form');
         const result = document.getElementById('login-result');
 
         form.addEventListener('submit', e=>{
           e.preventDefault();
-          const role = form.role.value;
+          const role = form.role.value || 'donor';
           const id = form.identifier.value.trim();
           const pw = form.password.value;
 
           if(!id || !pw){
-            result.textContent = 'Please fill identifier and password.';
+            result.textContent = 'Please fill email and password.';
+            result.style.color = '#ef4444';
             return;
           }
 
           // Verify against stored users
           const user = BBAuth.findUserByIdentifier(id);
-          if(!user || user.password !== pw || user.role !== role){
-            result.textContent = 'Invalid credentials. Check role, identifier, and password.';
+          if(!user || user.password !== pw){
+            result.textContent = 'Invalid credentials. Please check your email and password.';
+            result.style.color = '#ef4444';
             return;
           }
 
@@ -92,10 +73,8 @@
           const session = {role:user.role, identifier: user.email||user.phone||user.identifier, userId:user.id, loggedAt:Date.now()};
           BBAuth.saveSession(session);
           result.textContent = 'Signed in — redirecting...';
-          // Redirect based on role
-          const roleHashMap = { donor: '#donors', recipient: '#recipients', hospital: '#hospitals' };
-          const hash = roleHashMap[user.role] || '';
-          setTimeout(()=>{ window.location.href = 'index.html' + hash; },600);
+          result.style.color = '#4ade80';
+          setTimeout(()=>{ window.location.href = 'index.html'; },600);
         });
       });
     </script>
