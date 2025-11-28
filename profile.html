@@ -46,15 +46,38 @@
       </div>
     </div>
 
-    <!-- Profile Form -->
+    <!-- Eligibility & Profile Form -->
     <section class="card">
-      <h3 style="margin-top:0">Full Address</h3>
+      <h3 style="margin-top:0">Donor Eligibility</h3>
       <form id="profile-form">
         <input type="hidden" id="profile-pic" name="picture" />
+
+        <label for="profile-nid">NID Number</label>
+        <input id="profile-nid" name="nid" type="text" placeholder="Enter your NID number" />
+
+        <label for="profile-blood-group">Blood Group</label>
+        <select id="profile-blood-group" name="blood_group">
+          <option value="">Choose</option>
+          <option value="A+">A+</option>
+          <option value="A-">A-</option>
+          <option value="B+">B+</option>
+          <option value="B-">B-</option>
+          <option value="AB+">AB+</option>
+          <option value="AB-">AB-</option>
+          <option value="O+">O+</option>
+          <option value="O-">O-</option>
+        </select>
+
+        <label for="profile-age">Age</label>
+        <input id="profile-age" name="age" type="number" min="18" max="120" placeholder="Your age" />
+
+        <label for="profile-address">Address</label>
         <input id="profile-address" name="address" type="text" placeholder="Enter your full address" style="background:var(--bg);border:1px solid var(--border);padding:1rem;border-radius:8px" />
+
         <button type="submit" class="btn-blood" style="width:auto;align-self:flex-end;margin-top:1rem">Save Changes</button>
       </form>
       <div id="profile-result" class="result"></div>
+      <p class="muted" id="eligibility-status" style="margin-top:0.5rem"></p>
     </section>
 
     <!-- Email and Phone (read-only) -->
@@ -98,9 +121,21 @@
       if(me.email) document.getElementById('profile-email').textContent = me.email;
       if(me.phone) document.getElementById('profile-phone').textContent = me.phone;
       if(me.address) document.getElementById('profile-address').value = me.address;
+      if(me.nid) document.getElementById('profile-nid').value = me.nid;
+      if(me.blood_group) document.getElementById('profile-blood-group').value = me.blood_group;
+      if(me.age) document.getElementById('profile-age').value = me.age;
       if(me.picture) {
         document.getElementById('profile-pic').value = me.picture;
         document.getElementById('profile-avatar-img').src = me.picture;
+      }
+
+      function updateEligibilityStatus(user){
+        const ok = !!(user.nid && user.blood_group && user.age && user.address);
+        const el = document.getElementById('eligibility-status');
+        if(el){
+          el.textContent = ok ? 'Eligibility complete: you can donate/request without extra form.' : 'Complete eligibility (NID, blood group, age, address) to skip forms on homepage.';
+          el.style.color = ok ? '#4ade80' : 'var(--muted)';
+        }
       }
 
       // file upload -> Data URL conversion
@@ -137,12 +172,16 @@
         const users = JSON.parse(localStorage.getItem('bb_users')||'[]');
         const idx = users.findIndex(u=>u.id===session.userId);
         if(idx>=0){
+          users[idx].nid = document.getElementById('profile-nid').value.trim();
+          users[idx].blood_group = document.getElementById('profile-blood-group').value;
+          users[idx].age = parseInt(document.getElementById('profile-age').value||'');
           users[idx].address = document.getElementById('profile-address').value.trim();
           users[idx].picture = document.getElementById('profile-pic').value.trim();
           localStorage.setItem('bb_users', JSON.stringify(users));
           profileResult.textContent = 'Profile updated successfully!';
           profileResult.style.color = '#4ade80';
           setTimeout(() => profileResult.textContent = '', 3000);
+          updateEligibilityStatus(users[idx]);
         }
       });
 
@@ -160,6 +199,9 @@
       logoutBtn.addEventListener('click', ()=>{
         BBAuth.logout();
       });
+
+      // Initialize eligibility status
+      updateEligibilityStatus(me || {});
     });
   </script>
 </body>

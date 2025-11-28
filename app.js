@@ -217,6 +217,31 @@ document.addEventListener('DOMContentLoaded', ()=>{
     if(btn){
       const action = btn.getAttribute('data-action');
       const id = btn.getAttribute('data-id');
+      // If user eligibility is complete, skip modal and auto-submit
+      try{
+        const users = JSON.parse(localStorage.getItem('bb_users')||'[]');
+        const me = users.find(u=>u.id === (session && session.userId));
+        const eligible = me && me.nid && me.blood_group && me.age && me.address;
+        if(eligible){
+          const storageKey = action === 'donate' ? 'bb_donations' : 'bb_requests';
+          const entry = {
+            id: Date.now(),
+            actionType: action,
+            fullname: me.name || (session && session.identifier) || 'Anonymous',
+            phone: me.phone || '',
+            email: me.email || '',
+            address: me.address || '',
+            blood_group: me.blood_group || '',
+            nid: me.nid || '',
+          };
+          const existing = JSON.parse(localStorage.getItem(storageKey)||'[]');
+          existing.push(entry);
+          localStorage.setItem(storageKey, JSON.stringify(existing));
+          // brief feedback
+          alert('Submitted successfully.');
+          return;
+        }
+      }catch(err){ /* fallback to modal */ }
       openModal(action, id);
     }
   });
@@ -230,10 +255,10 @@ document.addEventListener('DOMContentLoaded', ()=>{
       const fd = new FormData(actionForm);
       const payload = {};
       for(const [k,v] of fd.entries()) payload[k]=v;
-      // Basic validation: nid, fullname, phone, blood_group required
-      if(!payload.nid || !payload.fullname || !payload.phone || !payload.blood_group){
+      // Basic validation: fullname, phone, blood_group required (NID not required)
+      if(!payload.fullname || !payload.phone || !payload.blood_group){
         modalResult.style.color = '#ffb4b4';
-        modalResult.textContent = 'Please fill required fields (NID, name, phone, blood group).';
+        modalResult.textContent = 'Please fill required fields (name, phone, blood group).';
         return;
       }
 
