@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blood Bond - Use Case Scenarios</title>
+    <style>
+        @media print {
+            body { margin: 0; }
+            .page-break { page-break-before: always; }
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            background: #fff;
+        }
+        
+        h1 {
+            color: #ef4444;
+            border-bottom: 3px solid #ef4444;
+            padding-bottom: 10px;
+            font-size: 2.5em;
+        }
+        
+        h2 {
+            color: #ef4444;
+            margin-top: 40px;
+            border-bottom: 2px solid #ddd;
+            padding-bottom: 8px;
+            font-size: 1.8em;
+        }
+        
+        h3 {
+            color: #333;
+            margin-top: 30px;
+            font-size: 1.4em;
+        }
+        
+        h4 {
+            color: #555;
+            margin-top: 20px;
+            font-size: 1.1em;
+        }
+        
+        .metadata {
+            background: #f8f9fa;
+            padding: 15px;
+            border-left: 4px solid #ef4444;
+            margin: 20px 0;
+        }
+        
+        .metadata p {
+            margin: 5px 0;
+        }
+        
+        .persona {
+            background: #fff5f5;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border: 1px solid #fecaca;
+        }
+        
+        .persona h3 {
+            color: #ef4444;
+            margin-top: 0;
+        }
+        
+        .use-case {
+            background: #f9fafb;
+            padding: 25px;
+            border-radius: 8px;
+            margin: 30px 0;
+            border: 1px solid #e5e7eb;
+        }
+        
+        .use-case-header {
+            background: #ef4444;
+            color: white;
+            padding: 15px 20px;
+            margin: -25px -25px 20px -25px;
+            border-radius: 8px 8px 0 0;
+        }
+        
+        .use-case-header h3 {
+            color: white;
+            margin: 0;
+        }
+        
+        .scenario-step {
+            padding-left: 20px;
+            border-left: 3px solid #ef4444;
+            margin: 10px 0;
+        }
+        
+        ol {
+            counter-reset: item;
+            list-style-type: none;
+            padding-left: 0;
+        }
+        
+        ol > li {
+            counter-increment: item;
+            margin-bottom: 8px;
+            padding-left: 30px;
+            position: relative;
+        }
+        
+        ol > li:before {
+            content: counter(item);
+            background: #ef4444;
+            color: white;
+            font-weight: bold;
+            padding: 2px 8px;
+            border-radius: 4px;
+            position: absolute;
+            left: 0;
+            top: 0;
+        }
+        
+        ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        
+        ul > li:before {
+            content: "▸ ";
+            color: #ef4444;
+            font-weight: bold;
+            margin-right: 5px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        
+        th {
+            background: #ef4444;
+            color: white;
+            padding: 12px;
+            text-align: left;
+        }
+        
+        td {
+            padding: 10px 12px;
+            border: 1px solid #ddd;
+        }
+        
+        tr:nth-child(even) {
+            background: #f9fafb;
+        }
+        
+        .workflow {
+            background: #f3f4f6;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            overflow-x: auto;
+            white-space: pre;
+            margin: 20px 0;
+        }
+        
+        .edge-case {
+            background: #fef3c7;
+            padding: 15px;
+            border-left: 4px solid #f59e0b;
+            margin: 15px 0;
+        }
+        
+        .recommendation {
+            background: #d1fae5;
+            padding: 15px;
+            border-left: 4px solid #10b981;
+            margin: 15px 0;
+        }
+        
+        .toc {
+            background: #f9fafb;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 30px 0;
+        }
+        
+        .toc ul {
+            padding-left: 20px;
+        }
+        
+        .toc ul li:before {
+            content: "→ ";
+        }
+        
+        code {
+            background: #f3f4f6;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            color: #ef4444;
+        }
+        
+        .checkmark {
+            color: #10b981;
+        }
+        
+        hr {
+            border: none;
+            border-top: 2px solid #e5e7eb;
+            margin: 40px 0;
+        }
+    </style>
+</head>
+<body>
+
+<h1>🩸 Blood Bond - Use Case Scenarios</h1>
+
+<div class="metadata">
+    <p><strong>Project:</strong> Blood Bond</p>
+    <p><strong>Version:</strong> 1.0</p>
+    <p><strong>Date:</strong> November 29, 2025</p>
+    <p><strong>Purpose:</strong> This document outlines comprehensive use case scenarios for the Blood Bond web platform</p>
+</div>
+
+<hr>
+
+<div class="toc">
+    <h2>Table of Contents</h2>
+    <ul>
+        <li><a href="#overview">System Overview</a></li>
+        <li><a href="#personas">User Personas</a></li>
+        <li><a href="#use-cases">Use Case Scenarios</a></li>
+        <li><a href="#workflows">Workflow Diagrams</a></li>
+        <li><a href="#edge-cases">Edge Cases</a></li>
+        <li><a href="#data">Data Storage Schema</a></li>
+        <li><a href="#criteria">User Acceptance Criteria</a></li>
+    </ul>
+</div>
+
+<hr>
+
+<h2 id="overview">System Overview</h2>
+
+<p>Blood Bond is a web-based blood donation management platform that connects blood donors with recipients in need. The system facilitates:</p>
+
+<ul>
+    <li>Donor registration and profile management</li>
+    <li>Blood request creation and management</li>
+    <li>Real-time matching between donors and recipients</li>
+    <li>Campaign organization for blood drives</li>
+    <li>Eligibility verification for donations</li>
+</ul>
+
+<hr class="page-break">
+
+<h2 id="personas">User Personas</h2>
+
+<div class="persona">
+    <h3>Persona 1: Sarah Ahmed - Regular Blood Donor</h3>
+    <p><strong>Age:</strong> 28</p>
+    <p><strong>Occupation:</strong> Software Engineer</p>
+    <p><strong>Location:</strong> Dhaka, Bangladesh</p>
+    <p><strong>Blood Type:</strong> O+</p>
+    <p><strong>Tech Savvy:</strong> High</p>
+    <p><strong>Motivation:</strong> Wants to help save lives and regularly donates blood</p>
+</div>
+
+<div class="persona">
+    <h3>Persona 2: Dr. Kamal Hassan - Hospital Staff</h3>
+    <p><strong>Age:</strong> 45</p>
+    <p><strong>Occupation:</strong> Emergency Room Doctor</p>
+    <p><strong>Location:</strong> Chittagong Medical College Hospital</p>
+    <p><strong>Tech Savvy:</strong> Medium</p>
+    <p><strong>Motivation:</strong> Needs quick access to blood donors for emergency patients</p>
+</div>
+
+<div class="persona">
+    <h3>Persona 3: Fatima Begum - Patient's Family Member</h3>
+    <p><strong>Age:</strong> 35</p>
+    <p><strong>Occupation:</strong> Teacher</p>
+    <p><strong>Location:</strong> Sylhet</p>
+    <p><strong>Blood Type:</strong> Need B+ for husband</p>
+    <p><strong>Tech Savvy:</strong> Low to Medium</p>
+    <p><strong>Motivation:</strong> Urgently needs blood for her husband's surgery</p>
+</div>
+
+<hr class="page-break">
+
+<h2 id="use-cases">Use Case Scenarios</h2>
+
+<div class="use-case">
+    <div class="use-case-header">
+        <h3>Use Case 1: New Donor Registration and Profile Setup</h3>
+    </div>
+    
+    <p><strong>Actor:</strong> Sarah Ahmed (First-time User)</p>
+    <p><strong>Goal:</strong> Register as a blood donor and complete eligibility profile</p>
+    <p><strong>Preconditions:</strong> None</p>
+    <p><strong>Postconditions:</strong> User has active account with complete eligibility information</p>
+    
+    <h4>Main Success Scenario:</h4>
+    <div class="scenario-step">
+        <ol>
+            <li>Sarah visits Blood Bond homepage</li>
+            <li>She clicks "Sign Up" button</li>
+            <li>She enters her credentials:
+                <ul>
+                    <li>Full name: Sarah Ahmed</li>
+                    <li>Email: sarah.ahmed@email.com</li>
+                    <li>Phone: +8801711234567</li>
+                    <li>Password: ********</li>
+                    <li>Role: Donor</li>
+                </ul>
+            </li>
+            <li>System validates information and creates account</li>
+            <li>Sarah is redirected to login page</li>
+            <li>She logs in with credentials</li>
+            <li>Sarah navigates to Profile page</li>
+            <li>She sees "Donor Eligibility" form with incomplete status message</li>
+            <li>Sarah fills in eligibility information:
+                <ul>
+                    <li>NID Number: 1234567890123</li>
+                    <li>Blood Group: O+</li>
+                    <li>Age: 28</li>
+                    <li>Address: House 45, Road 12, Dhanmondi, Dhaka</li>
+                </ul>
+            </li>
+            <li>She clicks "Save Changes"</li>
+            <li>System displays: "Eligibility complete: you can donate/request without extra form"</li>
+            <li>Sarah's profile is now complete</li>
+        </ol>
+    </div>
+    
+    <h4>Alternative Flows:</h4>
+    <ul>
+        <li><strong>A1:</strong> Email already exists - System shows error: "Email already registered"</li>
+        <li><strong>A2:</strong> Invalid NID format - System validates and prompts for correction</li>
+    </ul>
+</div>
+
+<div class="use-case page-break">
+    <div class="use-case-header">
+        <h3>Use Case 2: Eligible Donor Making Quick Donation</h3>
+    </div>
+    
+    <p><strong>Actor:</strong> Sarah Ahmed (Registered, Eligible Donor)</p>
+    <p><strong>Goal:</strong> Offer blood donation to recipient in need</p>
+    <p><strong>Preconditions:</strong> Sarah is logged in with complete eligibility</p>
+    <p><strong>Postconditions:</strong> Donation request recorded in system</p>
+    
+    <h4>Main Success Scenario:</h4>
+    <div class="scenario-step">
+        <ol>
+            <li>Sarah logs into Blood Bond</li>
+            <li>She navigates to Home page</li>
+            <li>She clicks "View as Donor" button</li>
+            <li>System displays list of recipients needing blood</li>
+            <li>Sarah sees "Patient: Karim - B+ Blood needed at Sylhet General"</li>
+            <li>She clicks "Donate" button on the card</li>
+            <li><strong>System checks eligibility (complete) - Modal bypassed ✓</strong></li>
+            <li>System automatically submits donation with Sarah's profile data</li>
+            <li>Alert displays: "Submitted successfully"</li>
+            <li>Entry saved to <code>bb_donations</code> localStorage</li>
+        </ol>
+    </div>
+    
+    <h4>Alternative Flows:</h4>
+    <ul>
+        <li><strong>A1:</strong> Sarah's eligibility incomplete - System opens modal form for manual entry</li>
+    </ul>
+</div>
+
+<div class="use-case page-break">
+    <div class="use-case-header">
+        <h3>Use Case 3: Emergency Blood Request by Patient Family</h3>
+    </div>
+    
+    <p><strong>Actor:</strong> Fatima Begum (Recipient)</p>
+    <p><strong>Goal:</strong> Create urgent blood request for hospitalized family member</p>
+    <p><strong>Preconditions:</strong> Fatima has Blood Bond account</p>
+    <p><strong>Postconditions:</strong> Blood request visible to eligible donors</p>
+    
+    <h4>Main Success Scenario:</h4>
+    <div class="scenario-step">
+        <ol>
+            <li>Fatima logs into Blood Bond</li>
+            <li>She navigates to "Requests" page</li>
+            <li>She clicks "My Sent Requests" tab</li>
+            <li>System displays "Create Request" card</li>
+            <li>She clicks "Create Request" button</li>
+            <li>Modal form opens with required fields</li>
+            <li>She fills all information:
+                <ul>
+                    <li>Full name: Mahmud Begum</li>
+                    <li>Phone: +8801855123456</li>
+                    <li>Address: Sylhet General Hospital, Room 302</li>
+                    <li>Blood group: B</li>
+                    <li>RH factor: Positive (+)</li>
+                    <li>Gender: Male</li>
+                    <li>Date needed: 2025-12-01</li>
+                </ul>
+            </li>
+            <li>She clicks "Submit Request"</li>
+            <li>System validates all fields</li>
+            <li>Request saved with unique ID</li>
+            <li>Success message: "Request created"</li>
+            <li>Request appears in "My Sent Requests" list</li>
+            <li>Request visible to all donors</li>
+        </ol>
+    </div>
+</div>
+
+<div class="use-case page-break">
+    <div class="use-case-header">
+        <h3>Use Case 4: Hospital Staff Reviewing Incoming Requests</h3>
+    </div>
+    
+    <p><strong>Actor:</strong> Dr. Kamal Hassan (Hospital Staff)</p>
+    <p><strong>Goal:</strong> Review and respond to blood donation offers</p>
+    <p><strong>Preconditions:</strong> Dr. Kamal logged in as Hospital role</p>
+    <p><strong>Postconditions:</strong> Donation requests accepted or rejected</p>
+    
+    <h4>Main Success Scenario:</h4>
+    <div class="scenario-step">
+        <ol>
+            <li>Dr. Kamal logs into Blood Bond</li>
+            <li>He navigates to "Requests" page</li>
+            <li>Default view shows "Incoming Requests"</li>
+            <li>System displays pending donation offers</li>
+            <li>Dr. Kamal reviews first request (Anita D.)</li>
+            <li>He verifies blood type matches patient need (B+)</li>
+            <li>He clicks "Accept" button</li>
+            <li>System records acceptance</li>
+            <li>Alert displays: "Request accepted! ID: 1"</li>
+            <li>Request status updated to "Accepted"</li>
+        </ol>
+    </div>
+</div>
+
+<hr class="page-break">
+
+<h2 id="workflows">Workflow Diagrams</h2>
+
+<h3>Overall User Flow</h3>
+<div class="workflow">
+┌─────────────┐
+│   Landing   │
+│    Page     │
+└──────┬──────┘
+       │
+       ├──────────┐
+       │          │
+   ┌───▼───┐  ┌──▼────┐
+   │ Login │  │ Signup│
+   └───┬───┘  └───┬───┘
+       └──────┬───┘
+              │
+        ┌─────▼─────┐
+        │ Dashboard │
+        │   (Home)  │
+        └─────┬─────┘
+              │
+    ┌─────────┼─────────┬──────────┐
+    │         │         │          │
+┌───▼───┐ ┌──▼──┐ ┌────▼────┐ ┌───▼────┐
+│Profile│ │Reqs │ │Campaigns│ │ Logout │
+└───────┘ └─────┘ └─────────┘ └────────┘
+</div>
+
+<h3>Donation Flow (Eligible Donor)</h3>
+<div class="workflow">
+┌──────────────┐
+│ View as Donor│
+│  (Click tab) │
+└──────┬───────┘
+       │
+┌──────▼────────┐
+│ See Recipients│
+│     List      │
+└──────┬────────┘
+       │
+┌──────▼────────┐
+│ Click "Donate"│
+└──────┬────────┘
+       │
+┌──────▼────────────┐
+│ Check Eligibility │
+└──────┬────────────┘
+       │
+  ┌────┴────┐
+  │Complete?│
+  └────┬────┘
+       │
+    ┌──┴──┐
+   Yes    No
+    │      │
+    │   ┌──▼────────┐
+    │   │ Open Modal│
+    │   │Fill Fields│
+    │   └──┬────────┘
+    │      │
+    └──────┤
+           │
+    ┌──────▼────────┐
+    │Auto-Submit to │
+    │  bb_donations │
+    └──────┬────────┘
+           │
+    ┌──────▼────────┐
+    │Success Alert  │
+    └───────────────┘
+</div>
+
+<hr class="page-break">
+
+<h2 id="edge-cases">Edge Cases & Recommendations</h2>
+
+<div class="edge-case">
+    <h4>Edge Case 1: Incomplete Eligibility Attempting Quick Donate</h4>
+    <p><strong>Scenario:</strong> Donor without complete profile clicks "Donate"</p>
+    <p><strong>Expected:</strong> System opens modal form for manual entry</p>
+</div>
+
+<div class="edge-case">
+    <h4>Edge Case 2: Donor Below Legal Age (< 18)</h4>
+    <p><strong>Scenario:</strong> User registers with age 16</p>
+    <p><strong>Current:</strong> System accepts but should validate donation rules</p>
+</div>
+
+<div class="recommendation">
+    <h4>Recommendation:</h4>
+    <p>Add age validation and warnings for users below 18 years old</p>
+</div>
+
+<div class="edge-case">
+    <h4>Edge Case 3: Duplicate NID Registration</h4>
+    <p><strong>Scenario:</strong> Two users attempt to register with same NID</p>
+    <p><strong>Current:</strong> No validation</p>
+</div>
+
+<div class="recommendation">
+    <h4>Recommendation:</h4>
+    <p>Add NID uniqueness check during registration</p>
+</div>
+
+<div class="edge-case">
+    <h4>Edge Case 4: Expired Blood Request</h4>
+    <p><strong>Scenario:</strong> Request date has passed</p>
+    <p><strong>Current:</strong> Still visible in list</p>
+</div>
+
+<div class="recommendation">
+    <h4>Recommendation:</h4>
+    <p>Filter or mark expired requests with visual indicators</p>
+</div>
+
+<hr class="page-break">
+
+<h2 id="data">Data Storage Schema</h2>
+
+<table>
+    <thead>
+        <tr>
+            <th>Key</th>
+            <th>Purpose</th>
+            <th>Structure</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><code>bb_session</code></td>
+            <td>Current user session</td>
+            <td>{userId, role, identifier}</td>
+        </tr>
+        <tr>
+            <td><code>bb_users</code></td>
+            <td>All registered users</td>
+            <td>[{id, name, email, phone, nid, blood_group, age, address, picture}]</td>
+        </tr>
+        <tr>
+            <td><code>bb_requests</code></td>
+            <td>Blood requests</td>
+            <td>[{id, name, phone, address, blood_group, rh, gender, need_date, createdBy}]</td>
+        </tr>
+        <tr>
+            <td><code>bb_donations</code></td>
+            <td>Donation records</td>
+            <td>[{id, actionType, fullname, phone, email, address, blood_group, nid}]</td>
+        </tr>
+        <tr>
+            <td><code>bb_campaigns</code></td>
+            <td>Available campaigns</td>
+            <td>[{id, title, location, date}]</td>
+        </tr>
+    </tbody>
+</table>
+
+<hr class="page-break">
+
+<h2 id="criteria">User Acceptance Criteria</h2>
+
+<h3>For Donors:</h3>
+<ul>
+    <li><span class="checkmark">✓</span> Can register and create profile</li>
+    <li><span class="checkmark">✓</span> Can complete eligibility information</li>
+    <li><span class="checkmark">✓</span> Can make quick donations when eligible</li>
+    <li><span class="checkmark">✓</span> Can view recipients needing blood</li>
+    <li><span class="checkmark">✓</span> Can register for campaigns</li>
+    <li><span class="checkmark">✓</span> Can update profile and picture</li>
+    <li><span class="checkmark">✓</span> Can toggle willingness to donate</li>
+</ul>
+
+<h3>For Recipients/Hospitals:</h3>
+<ul>
+    <li><span class="checkmark">✓</span> Can create blood requests with full details</li>
+    <li><span class="checkmark">✓</span> Can view incoming donation offers</li>
+    <li><span class="checkmark">✓</span> Can accept/reject donation requests</li>
+    <li><span class="checkmark">✓</span> Can view own sent requests</li>
+    <li><span class="checkmark">✓</span> Can search for specific blood types</li>
+</ul>
+
+<h3>For System:</h3>
+<ul>
+    <li><span class="checkmark">✓</span> Validates required fields before submission</li>
+    <li><span class="checkmark">✓</span> Persists data in localStorage</li>
+    <li><span class="checkmark">✓</span> Manages user sessions</li>
+    <li><span class="checkmark">✓</span> Provides clear feedback messages</li>
+    <li><span class="checkmark">✓</span> Responsive design for mobile/desktop</li>
+    <li><span class="checkmark">✓</span> Accessible navigation and controls</li>
+</ul>
+
+<hr>
+
+<h2>Future Enhancements</h2>
+
+<ul>
+    <li><strong>Real-time Notifications:</strong> Email/SMS when donation accepted, push notifications for urgent requests</li>
+    <li><strong>Backend Integration:</strong> Replace localStorage with database, API for data persistence</li>
+    <li><strong>Advanced Matching:</strong> Location-based donor matching, blood compatibility checking</li>
+    <li><strong>Verification System:</strong> NID verification via national database, hospital verification</li>
+    <li><strong>Donation History:</strong> Track past donations, frequency tracking, health eligibility reminders</li>
+    <li><strong>Analytics Dashboard:</strong> Donation statistics, blood type availability charts</li>
+    <li><strong>Multi-language Support:</strong> Bengali and other regional languages</li>
+</ul>
+
+<hr>
+
+<h2>Conclusion</h2>
+
+<p>Blood Bond provides a streamlined platform for connecting blood donors with recipients in need. The system prioritizes user experience by simplifying the donation process for eligible donors, enabling quick request creation for urgent needs, and maintaining comprehensive user profiles.</p>
+
+<div class="metadata" style="margin-top: 40px;">
+    <p><strong>Document Version:</strong> 1.0</p>
+    <p><strong>Last Updated:</strong> November 29, 2025</p>
+    <p><strong>Prepared By:</strong> Blood Bond Development Team</p>
+    <p><strong>Contact:</strong> support@bloodbond.com</p>
+</div>
+
+</body>
+</html>
