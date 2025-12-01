@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Hospital/NGO Sign Up — Blood Bond</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body style="background:var(--bg)">
+    <div class="auth-container">
+        <div style="display:flex;align-items:center;gap:3rem;max-width:1200px;width:100%">
+            <!-- Left side - Hero image and text -->
+            <div class="hero-copy"
+                style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem">
+                <img src="Untitled design (4).png" alt="Blood drops"
+                    style="width:100%;max-width:400px;margin-bottom:2rem;object-fit:contain" />
+                <h2 class="hero-title" style="text-align:center"><span class="brand-name">Blood Bond:</span> Connect.
+                    Donate. Save Lives.</h2>
+            </div>
+
+            <!-- Right side - Hospital/NGO Sign up form -->
+            <div class="auth-form-wrapper" style="flex:1">
+                <div class="auth-header">
+                    <h1 class="brand" style="justify-content:center">Blood Bond</h1><br>
+                    <h2 style="text-align:center;margin-bottom:1rem;font-size:1.25rem">Hospital/NGO Registration</h2>
+                    <div class="auth-toggle">
+                        <button type="button" onclick="window.location.href='login.html'">Log In</button>
+                        <button type="button" class="active">Sign Up</button>
+                    </div>
+                </div>
+
+                <form id="hospital-signup-form">
+                    <input id="hospital_name" name="hospital_name" type="text" placeholder="Hospital/NGO Name"
+                        required />
+                    <input id="name" name="name" type="text" placeholder="Contact Person Name" required />
+                    <input id="email" name="email" type="email" placeholder="Email Address" required />
+                    <input id="address" name="address" type="text" placeholder="Address" required />
+                    <input id="license_number" name="license_number" type="text" placeholder="License Number"
+                        required />
+                    <input id="password" name="password" type="password" placeholder="Password" required />
+
+                    <input type="hidden" id="role" name="role" value="hospital" />
+
+                    <button type="submit" class="btn-blood" style="width:100%;margin-top:1rem">Create Hospital/NGO
+                        Account</button>
+                </form>
+
+                <div class="auth-link">
+                    Already have an account? <a href="login.html">Log In</a>
+                </div>
+
+                <div id="signup-result" class="result" aria-live="polite"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="auth.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const form = document.getElementById('hospital-signup-form');
+            const result = document.getElementById('signup-result');
+
+            form.addEventListener('submit', e => {
+                e.preventDefault();
+                const data = {
+                    id: Date.now(),
+                    role: 'hospital',
+                    hospital_name: form.hospital_name.value.trim(),
+                    name: form.name.value.trim(),
+                    email: form.email.value.trim(),
+                    address: form.address.value.trim(),
+                    license_number: form.license_number.value.trim(),
+                    password: form.password.value,
+                    phone: form.email.value.trim() // Use email as identifier
+                };
+
+                if (!data.hospital_name || !data.name || !data.email || !data.address || !data.license_number || !data.password) {
+                    result.textContent = 'Please fill all required fields.';
+                    result.style.color = '#ef4444';
+                    return;
+                }
+
+                // Check for existing identifier collision
+                const existing = BBAuth.findUserByIdentifier(data.email);
+                if (existing) {
+                    result.textContent = 'An account with this email already exists.';
+                    result.style.color = '#ef4444';
+                    return;
+                }
+
+                BBAuth.saveUser(data);
+                // create session and redirect to hospital home
+                BBAuth.saveSession({ role: 'hospital', identifier: data.email, userId: data.id, loggedAt: Date.now() });
+                result.style.color = '#4ade80';
+                result.textContent = 'Hospital/NGO account created — redirecting...';
+                setTimeout(() => window.location.href = 'hospital-home.html', 700);
+            });
+        });
+    </script>
+</body>
+
+</html>

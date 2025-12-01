@@ -1,0 +1,327 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Hospital Home — Blood Bond</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <header class="site-header">
+        <div class="container">
+            <h1 class="brand">Blood Bond</h1>
+            <nav class="nav" aria-label="Main navigation">
+                <a href="hospital-home.html" class="active">Home</a>
+                <a href="hospital-campaigns.html">Campaigns</a>
+            </nav>
+            <div style="display:flex;align-items:center;gap:1rem">
+                <div id="user-info" style="color:var(--muted);font-size:0.9rem"></div>
+                <a href="hospital-profile.html"><img src="https://i.pravatar.cc/80" alt="Profile" class="avatar"
+                        style="width:40px;height:40px" /></a>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <section class="container" style="padding-top:2rem">
+            <h2 style="margin-bottom:1.5rem">Eligible & Willing Donors</h2>
+
+            <div style="display:flex;gap:1rem;margin-bottom:2rem;flex-wrap:wrap">
+                <input type="text" id="search-q" placeholder="Search by name, location, blood group..."
+                    style="flex:1;min-width:200px;padding:0.5rem;border:1px solid var(--border);border-radius:4px" />
+                <select id="filter-bg" style="padding:0.5rem;border:1px solid var(--border);border-radius:4px">
+                    <option value="">All Blood Groups</option>
+                    <option value="A+">A+</option>
+                    <option value="A-">A-</option>
+                    <option value="B+">B+</option>
+                    <option value="B-">B-</option>
+                    <option value="AB+">AB+</option>
+                    <option value="AB-">AB-</option>
+                    <option value="O+">O+</option>
+                    <option value="O-">O-</option>
+                </select>
+            </div>
+
+            <div id="donor-list" class="donor-grid" aria-live="polite"></div>
+        </section>
+
+        <!-- Modal for request form -->
+        <div id="modal" class="modal" aria-hidden="true">
+            <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+                <button id="modal-close" class="modal-close" aria-label="Close">✕</button>
+                <h3 id="modal-title">Request Blood from Donor</h3>
+                <form id="request-form">
+                    <input type="hidden" id="donor-id" name="donorId" value="" />
+
+                    <label for="patient-name">Patient Name</label>
+                    <input id="patient-name" name="patientName" type="text" required />
+
+                    <label for="patient-phone">Patient Phone</label>
+                    <input id="patient-phone" name="patientPhone" type="tel" required />
+
+                    <label for="patient-blood">Blood Group Needed</label>
+                    <select id="patient-blood" name="bloodGroup" required>
+                        <option value="">Choose</option>
+                        <option value="A+">A+</option>
+                        <option value="A-">A-</option>
+                        <option value="B+">B+</option>
+                        <option value="B-">B-</option>
+                        <option value="AB+">AB+</option>
+                        <option value="AB-">AB-</option>
+                        <option value="O+">O+</option>
+                        <option value="O-">O-</option>
+                    </select>
+
+                    <label for="units-needed">Units Needed</label>
+                    <input id="units-needed" name="unitsNeeded" type="number" min="1" value="1" required />
+
+                    <label for="urgency">Urgency Level</label>
+                    <select id="urgency" name="urgency" required>
+                        <option value="normal">Normal</option>
+                        <option value="urgent">Urgent</option>
+                        <option value="critical">Critical</option>
+                    </select>
+
+                    <label for="needed-by">Needed By Date</label>
+                    <input id="needed-by" name="neededBy" type="date" required />
+
+                    <label for="notes">Additional Notes</label>
+                    <textarea id="notes" name="notes" rows="3"
+                        style="width:100%;padding:0.5rem;border:1px solid var(--border);border-radius:4px"></textarea>
+
+                    <div style="display:flex;gap:0.5rem;margin-top:0.75rem">
+                        <button type="submit" class="btn-blood">Submit Request</button>
+                        <button type="button" id="modal-cancel" class="btn-secondary">Cancel</button>
+                    </div>
+                </form>
+                <div id="modal-result" class="result" aria-live="polite"></div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="site-footer">
+        <div class="container">
+            <small>© Blood Bond — Hospital Portal</small>
+        </div>
+    </footer>
+
+    <script src="auth.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const session = BBAuth.requireLogin();
+            if (!session) return;
+
+            // Ensure user is hospital
+            if (session.role !== 'hospital') {
+                alert('Access denied. Hospital accounts only.');
+                window.location.href = 'index.html';
+                return;
+            }
+
+            // Update user info in header
+            const userInfoEl = document.getElementById('user-info');
+            if (userInfoEl) {
+                const users = JSON.parse(localStorage.getItem('bb_users') || '[]');
+                const user = users.find(u => u.id === session.userId);
+                if (user && user.hospital_name) {
+                    userInfoEl.textContent = user.hospital_name;
+                } else {
+                    userInfoEl.textContent = `Hospital · ${session.identifier}`;
+                }
+            }
+
+            const donorListEl = document.getElementById('donor-list');
+            const filterBg = document.getElementById('filter-bg');
+            const searchQ = document.getElementById('search-q');
+            const modal = document.getElementById('modal');
+            const modalClose = document.getElementById('modal-close');
+            const modalCancel = document.getElementById('modal-cancel');
+            const requestForm = document.getElementById('request-form');
+            const modalResult = document.getElementById('modal-result');
+
+            // Get eligible donors (last donation > 90 days ago or never donated)
+            function getEligibleDonors() {
+                const users = JSON.parse(localStorage.getItem('bb_users') || '[]');
+                const today = new Date();
+                const ninetyDaysAgo = new Date(today.getTime() - (90 * 24 * 60 * 60 * 1000));
+
+                return users.filter(u => {
+                    // Must be donor role and have blood group
+                    if (u.role !== 'donor' || !u.blood_group) return false;
+
+                    // Check if willing to donate (you can add a 'willing' flag to user profile)
+                    // For now, assume all donors with complete profiles are willing
+                    if (!u.name || !u.phone) return false;
+
+                    // Check last donation date
+                    if (!u.last_donation) return true; // Never donated - eligible
+
+                    const lastDonation = new Date(u.last_donation);
+                    return lastDonation < ninetyDaysAgo; // Eligible if 90+ days ago
+                });
+            }
+
+            function matchesQuery(donor, q) {
+                if (!q) return true;
+                q = q.toLowerCase();
+                return (donor.name && donor.name.toLowerCase().includes(q)) ||
+                    (donor.phone && donor.phone.toLowerCase().includes(q)) ||
+                    (donor.address && donor.address.toLowerCase().includes(q)) ||
+                    (donor.blood_group && donor.blood_group.toLowerCase().includes(q));
+            }
+
+            function renderDonors() {
+                if (!donorListEl) return;
+                donorListEl.innerHTML = '';
+
+                const filter = filterBg ? filterBg.value : '';
+                const q = searchQ ? searchQ.value.trim() : '';
+                const eligible = getEligibleDonors();
+                const list = eligible.filter(d => (!filter || d.blood_group === filter) && matchesQuery(d, q));
+
+                if (list.length === 0) {
+                    donorListEl.innerHTML = '<p class="muted">No eligible donors found for selected filter/search.</p>';
+                    return;
+                }
+
+                for (const d of list) {
+                    const card = document.createElement('div');
+                    card.className = 'donor-card';
+
+                    const avatarSrc = d.picture || `https://ui-avatars.com/api/?name=${encodeURIComponent(d.name)}&background=0AA6BF&color=ffffff&size=128`;
+                    const lastDonation = d.last_donation ? new Date(d.last_donation).toLocaleDateString() : 'Never';
+
+                    card.innerHTML = `
+            <div style="display:flex;flex-direction:column;align-items:center;text-align:center;gap:1rem">
+              <img class="avatar" src="${avatarSrc}" alt="${escapeHtml(d.name)}" />
+              <div style="width:100%">
+                <div style="display:flex;align-items:center;justify-content:center;gap:0.5rem;margin-bottom:0.5rem">
+                  <strong class="donor-name">${escapeHtml(d.name)}</strong>
+                  <span class="blood-badge">${escapeHtml(d.blood_group)}</span>
+                </div>
+                <div class="donor-location">${escapeHtml(d.address || 'Location not specified')}</div>
+                <div class="donor-location" style="font-size:0.85rem;color:var(--muted);margin-top:0.25rem">Phone: ${escapeHtml(d.phone)}</div>
+                <div class="donor-location" style="font-size:0.85rem;color:var(--muted)">Last Donation: ${lastDonation}</div>
+              </div>
+              <div class="actions" style="width:100%">
+                <button class="btn-blood" data-action="request" data-donor-id="${d.id}" style="width:100%">Request Blood</button>
+              </div>
+            </div>
+          `;
+                    donorListEl.appendChild(card);
+                }
+            }
+
+            function escapeHtml(s) { if (!s) return ''; return String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+
+            // Event listeners
+            if (filterBg) filterBg.addEventListener('change', renderDonors);
+            if (searchQ) searchQ.addEventListener('input', renderDonors);
+
+            // Handle request button clicks
+            document.body.addEventListener('click', e => {
+                const btn = e.target.closest && e.target.closest('button[data-action="request"]');
+                if (btn) {
+                    const donorId = btn.getAttribute('data-donor-id');
+                    openModal(donorId);
+                }
+            });
+
+            function openModal(donorId) {
+                modal.setAttribute('aria-hidden', 'false');
+                document.body.style.overflow = 'hidden';
+                modalResult.textContent = '';
+                requestForm.reset();
+                document.getElementById('donor-id').value = donorId;
+
+                // Prefill blood group from donor
+                const users = JSON.parse(localStorage.getItem('bb_users') || '[]');
+                const donor = users.find(u => u.id == donorId);
+                if (donor && donor.blood_group) {
+                    document.getElementById('patient-blood').value = donor.blood_group;
+                }
+
+                // Set default date to tomorrow
+                const tomorrow = new Date();
+                tomorrow.setDate(tomorrow.getDate() + 1);
+                document.getElementById('needed-by').value = tomorrow.toISOString().split('T')[0];
+
+                const firstInput = modal.querySelector('input:not([type="hidden"]),select,button,textarea');
+                if (firstInput) firstInput.focus();
+            }
+
+            function closeModal() {
+                modal.setAttribute('aria-hidden', 'true');
+                document.body.style.overflow = '';
+                requestForm.reset();
+                modalResult.textContent = '';
+            }
+
+            if (modalClose) modalClose.addEventListener('click', closeModal);
+            if (modalCancel) modalCancel.addEventListener('click', closeModal);
+
+            // Submit request
+            if (requestForm) {
+                requestForm.addEventListener('submit', e => {
+                    e.preventDefault();
+                    const fd = new FormData(requestForm);
+
+                    const donorId = fd.get('donorId');
+                    const patientName = (fd.get('patientName') || '').trim();
+                    const patientPhone = (fd.get('patientPhone') || '').trim();
+                    const bloodGroup = fd.get('bloodGroup');
+                    const unitsNeeded = fd.get('unitsNeeded');
+                    const urgency = fd.get('urgency');
+                    const neededBy = fd.get('neededBy');
+                    const notes = (fd.get('notes') || '').trim();
+
+                    if (!patientName || !patientPhone || !bloodGroup || !unitsNeeded || !neededBy) {
+                        modalResult.style.color = '#ffb4b4';
+                        modalResult.textContent = 'Please fill all required fields.';
+                        return;
+                    }
+
+                    // Get donor info
+                    const users = JSON.parse(localStorage.getItem('bb_users') || '[]');
+                    const donor = users.find(u => u.id == donorId);
+
+                    const request = {
+                        id: Date.now(),
+                        type: 'hospital_to_donor',
+                        hospitalId: session.userId,
+                        hospitalName: session.identifier,
+                        donorId: donorId,
+                        donorName: donor ? donor.name : 'Unknown',
+                        donorPhone: donor ? donor.phone : '',
+                        patientName: patientName,
+                        patientPhone: patientPhone,
+                        bloodGroup: bloodGroup,
+                        unitsNeeded: unitsNeeded,
+                        urgency: urgency,
+                        neededBy: neededBy,
+                        notes: notes,
+                        status: 'pending',
+                        createdAt: new Date().toISOString()
+                    };
+
+                    // Save to hospital requests
+                    const key = 'bb_hospital_requests';
+                    const existing = JSON.parse(localStorage.getItem(key) || '[]');
+                    existing.push(request);
+                    localStorage.setItem(key, JSON.stringify(existing));
+
+                    modalResult.style.color = '#9fe8c0';
+                    modalResult.textContent = 'Request submitted successfully.';
+                    setTimeout(() => { closeModal(); }, 800);
+                });
+            }
+
+            // Initial render
+            renderDonors();
+        });
+    </script>
+</body>
+
+</html>
