@@ -5,6 +5,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
     var session = BBAuth.requireLogin();
     if(!session) return; // requireLogin will redirect
   }
+  
   // --- Sample form handler (kept from scaffold) ---
   const sampleForm = document.getElementById('sample-form');
   const sampleResult = document.getElementById('form-result');
