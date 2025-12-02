@@ -1,82 +1,112 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Login — Blood Bond</title>
-    <link rel="stylesheet" href="styles.css">
-  </head>
-  <body style="background:var(--bg)">
-    <div class="auth-container">
-      <div style="display:flex;align-items:center;gap:3rem;max-width:1200px;width:100%">
-        <!-- Left side - Hero image and text -->
-        <div class="hero-copy" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem">
-          <img src="Untitled design (4).png" alt="Blood drops" style="width:100%;max-width:400px;margin-bottom:2rem;object-fit:contain" />
-          <h2 class="hero-title" style="text-align:center"><span class="brand-name">Blood Bond:</span> Connect. Donate. Save Lives.</h2>
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Login — Blood Bond</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+
+<body style="background:var(--bg)">
+  <div class="auth-container">
+    <div style="display:flex;align-items:center;gap:3rem;max-width:1200px;width:100%">
+      <!-- Left side - Hero image and text -->
+      <div class="hero-copy"
+        style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem">
+        <img src="Untitled design (4).png" alt="Blood drops"
+          style="width:100%;max-width:400px;margin-bottom:2rem;object-fit:contain" />
+        <h2 class="hero-title" style="text-align:center"><span class="brand-name">Blood Bond:</span> Connect. Donate.
+          Save Lives.</h2>
+      </div>
+
+      <!-- Right side - Login form -->
+      <div class="auth-form-wrapper" style="flex:1">
+        <div class="auth-header">
+          <h1 class="brand" style="justify-content:center">Blood Bond</h1><br>
+          <div class="auth-toggle">
+            <button type="button" class="active">Log In</button>
+            <button type="button" onclick="window.location.href='signup.html'">Sign Up</button>
+          </div>
         </div>
 
-        <!-- Right side - Login form -->
-        <div class="auth-form-wrapper" style="flex:1">
-          <div class="auth-header">
-            <h1 class="brand" style="justify-content:center">Blood Bond</h1><br>
-            <div class="auth-toggle">
-              <button type="button" class="active">Log In</button>
-              <button type="button" onclick="window.location.href='signup.html'">Sign Up</button>
-            </div>
-          </div>
+        <form id="login-form">
+          <input id="identifier" name="identifier" type="text" placeholder="Email Address" required />
+          <input id="password" name="password" type="password" placeholder="Password" required />
 
-          <form id="login-form">
-            <input id="identifier" name="identifier" type="text" placeholder="Email Address" required />
-            <input id="password" name="password" type="password" placeholder="Password" required />
-            
-            <input type="hidden" id="role" name="role" value="donor" />
+          <input type="hidden" id="role" name="role" value="donor" />
 
-            <button type="submit" class="btn-blood" style="width:100%;margin-top:1rem">Log In</button>
-          </form>
+          <button type="submit" class="btn-blood" style="width:100%;margin-top:1rem">Log In</button>
+        </form>
 
-          <div class="auth-link">
-            Don't have an account? <a href="signup.html">Sign Up</a>
-          </div>
-
-          <div id="login-result" class="result" aria-live="polite"></div>
+        <div class="auth-link">
+          Don't have an account? <a href="signup.html">Sign Up</a>
         </div>
+
+        <div class="auth-link" style="margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border)">
+          Hospital/NGO? <a href="#" id="hospital-login-link">Log In Here</a> or <a
+            href="hospital-signup.html">Register</a>
+        </div>
+
+        <div id="login-result" class="result" aria-live="polite"></div>
       </div>
     </div>
+  </div>
 
-    <script src="auth.js"></script>
-    <script>
-      document.addEventListener('DOMContentLoaded', ()=>{
-        const form = document.getElementById('login-form');
-        const result = document.getElementById('login-result');
+  <script src="auth.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const form = document.getElementById('login-form');
+      const result = document.getElementById('login-result');
+      const hospitalLoginLink = document.getElementById('hospital-login-link');
+      const roleField = document.getElementById('role');
+      const loginBtn = form.querySelector('button[type="submit"]');
 
-        form.addEventListener('submit', e=>{
+      // Handle hospital login link click
+      if (hospitalLoginLink) {
+        hospitalLoginLink.addEventListener('click', (e) => {
           e.preventDefault();
-          const role = form.role.value || 'donor';
-          const id = form.identifier.value.trim();
-          const pw = form.password.value;
-
-          if(!id || !pw){
-            result.textContent = 'Please fill email and password.';
-            result.style.color = '#ef4444';
-            return;
-          }
-
-          // Verify against stored users
-          const user = BBAuth.findUserByIdentifier(id);
-          if(!user || user.password !== pw){
-            result.textContent = 'Invalid credentials. Please check your email and password.';
-            result.style.color = '#ef4444';
-            return;
-          }
-
-          // Create session
-          const session = {role:user.role, identifier: user.email||user.phone||user.identifier, userId:user.id, loggedAt:Date.now()};
-          BBAuth.saveSession(session);
-          result.textContent = 'Signed in — redirecting...';
-          result.style.color = '#4ade80';
-          setTimeout(()=>{ window.location.href = 'index.html'; },600);
+          // Toggle to hospital mode
+          roleField.value = 'hospital';
+          loginBtn.textContent = 'Log In as Hospital/NGO';
+          loginBtn.style.background = '#059669';
+          result.textContent = 'Logging in as Hospital/NGO...';
+          result.style.color = '#059669';
+          setTimeout(() => { result.textContent = ''; }, 2000);
         });
+      }
+
+      form.addEventListener('submit', e => {
+        e.preventDefault();
+        const role = form.role.value || 'donor';
+        const id = form.identifier.value.trim();
+        const pw = form.password.value;
+
+        if (!id || !pw) {
+          result.textContent = 'Please fill email and password.';
+          result.style.color = '#ef4444';
+          return;
+        }
+
+        // Verify against stored users
+        const user = BBAuth.findUserByIdentifier(id);
+        if (!user || user.password !== pw) {
+          result.textContent = 'Invalid credentials. Please check your email and password.';
+          result.style.color = '#ef4444';
+          return;
+        }
+
+        // Create session
+        const session = { role: user.role, identifier: user.email || user.phone || user.identifier, userId: user.id, loggedAt: Date.now() };
+        BBAuth.saveSession(session);
+        result.textContent = 'Signed in — redirecting...';
+        result.style.color = '#4ade80';
+        // Redirect based on role
+        const redirectUrl = (user.role === 'hospital') ? 'hospital-home.html' : 'index.html';
+        setTimeout(() => { window.location.href = redirectUrl; }, 600);
       });
-    </script>
-  </body>
+    });
+  </script>
+</body>
+
 </html>

@@ -1,11 +1,13 @@
 <!doctype html>
 <html lang="en">
+
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Requests — Blood Bond</title>
   <link rel="stylesheet" href="styles.css">
 </head>
+
 <body>
   <header class="site-header">
     <div class="container">
@@ -29,7 +31,8 @@
     </div>
 
     <!-- Create Request Card (visible only in "My Sent Requests") -->
-    <div id="create-card" class="card" style="display:none; margin:-0.5rem auto 1rem; max-width:720px; text-align:center;">
+    <div id="create-card" class="card"
+      style="display:none; margin:-0.5rem auto 1rem; max-width:720px; text-align:center;">
       <div style="display:flex; align-items:center; justify-content:space-between; gap:1rem; flex-wrap:wrap">
         <div style="text-align:left; flex:1">
           <h3 style="margin:0 0 .25rem; font-size:1.15rem">Create a new request</h3>
@@ -95,12 +98,14 @@
     </div>
   </div>
 
-  <footer class="site-footer"><div class="container"><small>© Blood Bond</small></div></footer>
+  <footer class="site-footer">
+    <div class="container"><small>© Blood Bond</small></div>
+  </footer>
 
   <script src="auth.js"></script>
   <script>
-    document.addEventListener('DOMContentLoaded', ()=>{
-      const session = BBAuth.requireLogin(); if(!session) return;
+    document.addEventListener('DOMContentLoaded', () => {
+      const session = BBAuth.requireLogin(); if (!session) return;
 
       const listEl = document.getElementById('requests-container');
       const viewIncomingBtn = document.getElementById('view-incoming');
@@ -114,114 +119,151 @@
       const reqResult = document.getElementById('req-modal-result');
       let currentView = 'incoming';
 
-      // Sample request data
+      // Sample request data (kept for demo when storage empty)
       const sampleRequests = [
-        {id:1, name:'Anita D.', blood:'B+', location:'Square Hospital', time:'2 hours ago', avatar:'https://i.pravatar.cc/150?img=47'},
-        {id:2, name:'Rahul S.', blood:'B+', location:'Square Hospital', time:'2 hours ago', avatar:'https://i.pravatar.cc/150?img=12'},
-        {id:3, name:'Rahul S.', blood:'B+', location:'Square Hospital', time:'2 hours ago', avatar:'https://i.pravatar.cc/150?img=13'},
-        {id:4, name:'Rahul S.', blood:'A+', location:'Square Hospital', time:'2 hours ago', avatar:'https://i.pravatar.cc/150?img=14'},
-        {id:5, name:'Anita D.', blood:'B+', location:'Square Hospital', time:'2 hours ago', avatar:'https://i.pravatar.cc/150?img=48'}
+        { id: 1, name: 'Anita D.', blood: 'B+', location: 'Square Hospital', time: '2 hours ago', avatar: 'https://i.pravatar.cc/150?img=47', status: 'pending' },
+        { id: 2, name: 'Rahul S.', blood: 'B+', location: 'Square Hospital', time: '2 hours ago', avatar: 'https://i.pravatar.cc/150?img=12', status: 'pending' }
       ];
 
-      function loadRequests(){
+      function loadRequests() {
         listEl.innerHTML = '';
+        const allStored = JSON.parse(localStorage.getItem('bb_requests') || '[]');
         let requests = [];
-        if(currentView === 'incoming'){
-          requests = sampleRequests;
-        }else{
-          const all = JSON.parse(localStorage.getItem('bb_requests')||'[]');
-          requests = all.filter(r=> r.createdBy === session.identifier).map(r=>({
-            id:r.id,
-            name:r.name,
-            blood:(r.blood || ((r.blood_group||'') + (r.rh==='negative'?'-':'+'))),
-            location:r.address,
-            time:new Date(r.time||r.need_date||Date.now()).toLocaleDateString(),
-            avatar:'https://i.pravatar.cc/150?u=' + encodeURIComponent(r.name||r.id)
-          }));
+        if (currentView === 'incoming') {
+          // Incoming requests: show requests NOT created by me
+          requests = allStored.filter(r => r.createdBy !== session.identifier);
+        } else {
+          // Sent requests: show requests created by me
+          requests = allStored.filter(r => r.createdBy === session.identifier);
         }
-        
-        if(requests.length === 0){ 
-          listEl.innerHTML = '<p class="muted" style="text-align:center;padding:2rem">No requests yet.</p>'; 
+
+        // if none found and storage empty, show sample demo requests
+        if (requests.length === 0 && (allStored.length === 0)) {
+          requests = sampleRequests;
+        }
+
+        if (requests.length === 0) {
+          listEl.innerHTML = '<p class="muted" style="text-align:center;padding:2rem">No requests yet.</p>';
           return;
         }
-        
-        for(const r of requests){
+
+        for (const r of requests) {
           const el = document.createElement('div');
           el.className = 'request-card';
+          const avatar = r.avatar || ('https://i.pravatar.cc/150?u=' + encodeURIComponent(r.name || r.id));
+          const bloodLabel = r.blood || ((r.blood_group || '') + (r.rh === 'negative' ? '-' : '+'));
+          const when = r.time ? (new Date(r.time).toLocaleString ? new Date(r.time).toLocaleString() : r.time) : '';
+
+          // Actions differ for incoming vs sent
+          let actionsHtml = '';
+          if (currentView === 'incoming') {
+            // Only show accept/reject if request is pending
+            if (!r.status || r.status === 'pending') {
+              actionsHtml = `<button class="btn-accept" onclick="acceptRequest(${r.id})">Accept</button> <button class="btn-reject" onclick="rejectRequest(${r.id})">Reject</button>`;
+            } else if (r.status === 'accepted') {
+              actionsHtml = `<span class="status accepted">Accepted</span>`;
+            } else if (r.status === 'rejected') {
+              actionsHtml = `<span class="status rejected">Rejected</span>`;
+            }
+          } else {
+            // Sent view: show status badge instead of accept/reject
+            const st = r.status || 'pending';
+            const cls = st === 'accepted' ? 'accepted' : (st === 'rejected' ? 'rejected' : 'pending');
+            actionsHtml = `<span class="status ${cls}">${st.charAt(0).toUpperCase() + st.slice(1)}</span>`;
+          }
+
           el.innerHTML = `
-            <img class="avatar" src="${r.avatar}" alt="${r.name}" />
+            <img class="avatar" src="${avatar}" alt="${r.name || ''}" />
             <div class="request-info">
-              <h3 class="request-name">${r.name}</h3>
-              <div class="request-details">Urgent: ${r.blood} Blood needed at ${r.location}</div>
-              <div class="request-time">${r.time}</div>
+              <h3 class="request-name">${r.name || ''}</h3>
+              <div class="request-details">Urgent: ${bloodLabel || ''} Blood needed at ${r.location || ''}</div>
+              <div class="request-time">${when}</div>
             </div>
             <div class="request-actions">
-              <button class="btn-accept" onclick="acceptRequest(${r.id})">Accept</button>
-              <button class="btn-reject" onclick="rejectRequest(${r.id})">Reject</button>
+              ${actionsHtml}
             </div>
           `;
           listEl.appendChild(el);
         }
       }
 
-      function setView(view){
+      function setView(view) {
         currentView = view;
         viewIncomingBtn.classList.toggle('active', view === 'incoming');
         viewSentBtn.classList.toggle('active', view === 'sent');
         // Show create card only for "My Sent Requests"
-        if(createCard) createCard.style.display = (view === 'sent') ? 'block' : 'none';
+        if (createCard) createCard.style.display = (view === 'sent') ? 'block' : 'none';
         loadRequests();
       }
 
-      viewIncomingBtn.addEventListener('click', ()=> setView('incoming'));
-      viewSentBtn.addEventListener('click', ()=> setView('sent'));
+      viewIncomingBtn.addEventListener('click', () => setView('incoming'));
+      viewSentBtn.addEventListener('click', () => setView('sent'));
 
       // Modal helpers
-      function openModal(){ modal.setAttribute('aria-hidden','false'); document.body.style.overflow='hidden'; reqResult.textContent=''; reqForm.reset(); }
-      function closeModal(){ modal.setAttribute('aria-hidden','true'); document.body.style.overflow=''; }
-      if(newReqBtn) newReqBtn.addEventListener('click', openModal);
-      if(modalClose) modalClose.addEventListener('click', closeModal);
-      if(modalCancel) modalCancel.addEventListener('click', closeModal);
+      function openModal() { modal.setAttribute('aria-hidden', 'false'); document.body.style.overflow = 'hidden'; reqResult.textContent = ''; reqForm.reset(); }
+      function closeModal() { modal.setAttribute('aria-hidden', 'true'); document.body.style.overflow = ''; }
+      if (newReqBtn) newReqBtn.addEventListener('click', openModal);
+      if (modalClose) modalClose.addEventListener('click', closeModal);
+      if (modalCancel) modalCancel.addEventListener('click', closeModal);
 
       // Submit new request
-      if(reqForm){
-        reqForm.addEventListener('submit', (e)=>{
+      if (reqForm) {
+        reqForm.addEventListener('submit', (e) => {
           e.preventDefault();
           const fd = new FormData(reqForm);
-          const name = (fd.get('name')||'').trim();
-          const phone = (fd.get('phone')||'').trim();
-          const address = (fd.get('address')||'').trim();
+          const name = (fd.get('name') || '').trim();
+          const phone = (fd.get('phone') || '').trim();
+          const address = (fd.get('address') || '').trim();
           const blood_group = fd.get('blood_group');
           const rh = fd.get('rh');
           const gender = fd.get('gender');
           const need_date = fd.get('need_date');
-          if(!name || !phone || !address || !blood_group || !rh || !gender || !need_date){
+          if (!name || !phone || !address || !blood_group || !rh || !gender || !need_date) {
             reqResult.style.color = '#ffb4b4';
             reqResult.textContent = 'Please fill all required fields.';
             return;
           }
-          const blood = `${blood_group}${rh==='negative'?'-':'+'}`;
-          const item = { id: Date.now(), name, phone, address, gender, blood_group, rh, blood, need_date, createdBy: session.identifier, time: new Date().toISOString() };
+          const blood = `${blood_group}${rh === 'negative' ? '-' : '+'}`;
+          const item = { id: Date.now(), name, phone, address, gender, blood_group, rh, blood, need_date, createdBy: session.identifier, time: new Date().toISOString(), status: 'pending' };
           const key = 'bb_requests';
-          const existing = JSON.parse(localStorage.getItem(key)||'[]');
+          const existing = JSON.parse(localStorage.getItem(key) || '[]');
           existing.push(item);
           localStorage.setItem(key, JSON.stringify(existing));
           reqResult.style.color = '#9fe8c0';
           reqResult.textContent = 'Request created.';
-          setTimeout(()=>{ closeModal(); if(currentView==='sent') loadRequests(); }, 600);
+          setTimeout(() => { closeModal(); if (currentView === 'sent') loadRequests(); }, 600);
         });
       }
 
-      window.acceptRequest = function(id){
+      window.acceptRequest = function (id) {
+        const key = 'bb_requests';
+        const all = JSON.parse(localStorage.getItem(key) || '[]');
+        const idx = all.findIndex(r => r.id === id);
+        if (idx === -1) { alert('Request not found.'); return; }
+        all[idx].status = 'accepted';
+        all[idx].decidedBy = session.identifier;
+        all[idx].decidedAt = new Date().toISOString();
+        localStorage.setItem(key, JSON.stringify(all));
         alert('Request accepted! ID: ' + id);
+        loadRequests();
       };
 
-      window.rejectRequest = function(id){
+      window.rejectRequest = function (id) {
+        const key = 'bb_requests';
+        const all = JSON.parse(localStorage.getItem(key) || '[]');
+        const idx = all.findIndex(r => r.id === id);
+        if (idx === -1) { alert('Request not found.'); return; }
+        all[idx].status = 'rejected';
+        all[idx].decidedBy = session.identifier;
+        all[idx].decidedAt = new Date().toISOString();
+        localStorage.setItem(key, JSON.stringify(all));
         alert('Request rejected! ID: ' + id);
+        loadRequests();
       };
 
       loadRequests();
     });
   </script>
 </body>
+
 </html>

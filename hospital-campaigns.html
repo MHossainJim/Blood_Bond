@@ -1,0 +1,575 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Hospital Campaigns — Blood Bond</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <header class="site-header">
+        <div class="container">
+            <h1 class="brand">Blood Bond</h1>
+            <nav class="nav" aria-label="Main navigation">
+                <a href="hospital-home.html">Home</a>
+                <a href="hospital-campaigns.html" class="active">Campaigns</a>
+            </nav>
+            <div style="display:flex;align-items:center;gap:1rem">
+                <div id="user-info" style="color:var(--muted);font-size:0.9rem"></div>
+                <a href="hospital-profile.html"><img src="https://i.pravatar.cc/80" alt="Profile" class="avatar"
+                        style="width:40px;height:40px" /></a>
+            </div>
+        </div>
+    </header>
+
+    <main class="container" style="padding-top:2rem">
+        <div
+            style="display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:0.75rem;margin-bottom:2rem">
+            <button id="view-campaigns" class="btn-toggle active">My Campaigns</button>
+            <button id="view-requests" class="btn-toggle">Request Status</button>
+        </div>
+
+        <!-- Campaigns View -->
+        <section id="campaigns-section" style="display:block">
+            <!-- Create Campaign Card -->
+            <div class="card" style="margin:0 auto 1.5rem;max-width:720px;text-align:center">
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap">
+                    <div style="text-align:left;flex:1">
+                        <h3 style="margin:0 0 .25rem;font-size:1.15rem">Create a new campaign</h3>
+                        <p class="muted" style="margin:0">Organize blood donation drives and events.</p>
+                    </div>
+                    <button id="new-campaign" class="btn-blood">Create Campaign</button>
+                </div>
+            </div>
+
+            <div id="campaigns-list"></div>
+        </section>
+
+        <!-- Requests View -->
+        <section id="requests-section" style="display:none">
+            <!-- Create Request Card -->
+            <div class="card" style="margin:0 auto 1.5rem;max-width:720px;text-align:center">
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap">
+                    <div style="text-align:left;flex:1">
+                        <h3 style="margin:0 0 .25rem;font-size:1.15rem">Create a new request</h3>
+                        <p class="muted" style="margin:0">Provide patient details and needed date.</p>
+                    </div>
+                    <button id="new-request" class="btn-blood">Create Request</button>
+                </div>
+            </div>
+
+            <div id="requests-list"></div>
+        </section>
+    </main>
+
+    <!-- Modal: Create Campaign -->
+    <div id="campaign-modal" class="modal" aria-hidden="true">
+        <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="campaign-modal-title">
+            <button id="campaign-modal-close" class="modal-close" aria-label="Close">✕</button>
+            <h3 id="campaign-modal-title" style="margin-top:0">Create Blood Donation Campaign</h3>
+            <form id="campaign-form">
+                <label for="campaign-title">Campaign Title</label>
+                <input id="campaign-title" name="title" type="text" required
+                    placeholder="e.g., City Blood Drive 2025" />
+
+                <label for="campaign-location">Location</label>
+                <input id="campaign-location" name="location" type="text" required
+                    placeholder="e.g., Central Hospital, Dhaka" />
+
+                <label for="campaign-date">Event Date</label>
+                <input id="campaign-date" name="date" type="date" required />
+
+                <label for="campaign-time">Event Time</label>
+                <input id="campaign-time" name="time" type="time" required />
+
+                <label for="campaign-description">Description</label>
+                <textarea id="campaign-description" name="description" rows="3"
+                    style="width:100%;padding:0.5rem;border:1px solid var(--border);border-radius:4px"
+                    placeholder="Describe the campaign purpose and details..."></textarea>
+
+                <label for="campaign-target">Target Donors</label>
+                <input id="campaign-target" name="target" type="number" min="1" placeholder="e.g., 100" />
+
+                <div style="display:flex;gap:0.5rem;margin-top:0.75rem">
+                    <button type="submit" class="btn-blood">Create Campaign</button>
+                    <button type="button" id="campaign-modal-cancel" class="btn-secondary">Cancel</button>
+                </div>
+            </form>
+            <div id="campaign-modal-result" class="result" aria-live="polite"></div>
+        </div>
+    </div>
+
+    <!-- Modal: Create Request -->
+    <div id="request-modal" class="modal" aria-hidden="true">
+        <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="req-modal-title">
+            <button id="req-modal-close" class="modal-close" aria-label="Close">✕</button>
+            <h3 id="req-modal-title" style="margin-top:0">Create Blood Request</h3>
+            <form id="req-form">
+                <label for="req-name">Full name</label>
+                <input id="req-name" name="name" type="text" required />
+
+                <label for="req-phone">Phone number</label>
+                <input id="req-phone" name="phone" type="tel" required />
+
+                <label for="req-address">Address</label>
+                <input id="req-address" name="address" type="text" required />
+
+                <label for="req-blood">Blood group</label>
+                <select id="req-blood" name="blood_group" required>
+                    <option value="">Choose</option>
+                    <option value="A">A</option>
+                    <option value="B">B</option>
+                    <option value="AB">AB</option>
+                    <option value="O">O</option>
+                </select>
+
+                <label for="req-rh">RH factor</label>
+                <select id="req-rh" name="rh" required>
+                    <option value="">Choose</option>
+                    <option value="positive">Positive (+)</option>
+                    <option value="negative">Negative (-)</option>
+                </select>
+
+                <label for="req-gender">Gender</label>
+                <select id="req-gender" name="gender" required>
+                    <option value="">Choose</option>
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                    <option value="other">Other</option>
+                </select>
+
+                <label for="req-date">Date blood needed</label>
+                <input id="req-date" name="need_date" type="date" required />
+
+                <div style="display:flex;gap:0.5rem;margin-top:0.75rem">
+                    <button type="submit" class="btn-blood">Submit Request</button>
+                    <button type="button" id="req-modal-cancel" class="btn-secondary">Cancel</button>
+                </div>
+            </form>
+            <div id="req-modal-result" class="result" aria-live="polite"></div>
+        </div>
+    </div>
+
+    <!-- Modal: View Campaign Participants -->
+    <div id="participants-modal" class="modal" aria-hidden="true">
+        <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="participants-modal-title"
+            style="max-width:600px">
+            <button id="participants-modal-close" class="modal-close" aria-label="Close">✕</button>
+            <h3 id="participants-modal-title" style="margin-top:0">Campaign Participants</h3>
+            <div id="participants-list" style="max-height:400px;overflow-y:auto"></div>
+        </div>
+    </div>
+
+    <footer class="site-footer">
+        <div class="container">
+            <small>© Blood Bond — Hospital Portal</small>
+        </div>
+    </footer>
+
+    <script src="auth.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const session = BBAuth.requireLogin();
+            if (!session) return;
+
+            if (session.role !== 'hospital') {
+                alert('Access denied. Hospital accounts only.');
+                window.location.href = 'index.html';
+                return;
+            }
+
+            // Update user info
+            const userInfoEl = document.getElementById('user-info');
+            if (userInfoEl) {
+                const users = JSON.parse(localStorage.getItem('bb_users') || '[]');
+                const user = users.find(u => u.id === session.userId);
+                if (user && user.hospital_name) {
+                    userInfoEl.textContent = user.hospital_name;
+                } else {
+                    userInfoEl.textContent = `Hospital · ${session.identifier}`;
+                }
+            }
+
+            const viewCampaignsBtn = document.getElementById('view-campaigns');
+            const viewRequestsBtn = document.getElementById('view-requests');
+            const campaignsSection = document.getElementById('campaigns-section');
+            const requestsSection = document.getElementById('requests-section');
+            const campaignsList = document.getElementById('campaigns-list');
+            const requestsList = document.getElementById('requests-list');
+            const newCampaignBtn = document.getElementById('new-campaign');
+
+            const campaignModal = document.getElementById('campaign-modal');
+            const campaignModalClose = document.getElementById('campaign-modal-close');
+            const campaignModalCancel = document.getElementById('campaign-modal-cancel');
+            const campaignForm = document.getElementById('campaign-form');
+            const campaignResult = document.getElementById('campaign-modal-result');
+
+            const participantsModal = document.getElementById('participants-modal');
+            const participantsModalClose = document.getElementById('participants-modal-close');
+            const participantsList = document.getElementById('participants-list');
+
+            const newRequestBtn = document.getElementById('new-request');
+            const requestModal = document.getElementById('request-modal');
+            const requestModalClose = document.getElementById('req-modal-close');
+            const requestModalCancel = document.getElementById('req-modal-cancel');
+            const requestForm = document.getElementById('req-form');
+            const requestResult = document.getElementById('req-modal-result');
+
+            let currentView = 'campaigns';
+
+            function setView(view) {
+                currentView = view;
+                viewCampaignsBtn.classList.toggle('active', view === 'campaigns');
+                viewRequestsBtn.classList.toggle('active', view === 'requests');
+                campaignsSection.style.display = (view === 'campaigns') ? 'block' : 'none';
+                requestsSection.style.display = (view === 'requests') ? 'block' : 'none';
+
+                if (view === 'campaigns') loadCampaigns();
+                else loadRequests();
+            }
+
+            function loadCampaigns() {
+                campaignsList.innerHTML = '';
+                const allCampaigns = JSON.parse(localStorage.getItem('bb_campaigns') || '[]');
+                const myCampaigns = allCampaigns.filter(c => c.createdBy === session.userId);
+
+                if (myCampaigns.length === 0) {
+                    campaignsList.innerHTML = '<p class="muted" style="text-align:center;padding:2rem">No campaigns yet. Create your first campaign!</p>';
+                    return;
+                }
+
+                for (const c of myCampaigns) {
+                    const card = document.createElement('div');
+                    card.className = 'card';
+                    card.style.marginBottom = '1rem';
+
+                    const participants = c.participants || [];
+                    const participantCount = participants.length;
+                    const target = c.target || 0;
+
+                    card.innerHTML = `
+            <div style="display:flex;justify-content:space-between;align-items:start;gap:1rem;flex-wrap:wrap">
+              <div style="flex:1">
+                <h3 style="margin:0 0 0.5rem;font-size:1.15rem">${escapeHtml(c.title)}</h3>
+                <p style="margin:0.25rem 0;color:var(--muted)">
+                  <strong>Location:</strong> ${escapeHtml(c.location)}<br>
+                  <strong>Date:</strong> ${c.date} ${c.time ? 'at ' + c.time : ''}<br>
+                  ${c.description ? '<strong>Description:</strong> ' + escapeHtml(c.description) + '<br>' : ''}
+                  <strong>Participants:</strong> ${participantCount}${target ? ' / ' + target : ''}
+                </p>
+              </div>
+              <button class="btn-blood" data-action="view-participants" data-campaign-id="${c.id}">View Participants</button>
+            </div>
+          `;
+                    campaignsList.appendChild(card);
+                }
+            }
+
+            function loadRequests() {
+                requestsList.innerHTML = '';
+
+                // Load both hospital-to-donor requests and regular blood requests created by this hospital
+                const hospitalRequests = JSON.parse(localStorage.getItem('bb_hospital_requests') || '[]');
+                const bloodRequests = JSON.parse(localStorage.getItem('bb_requests') || '[]');
+
+                const myHospitalRequests = hospitalRequests.filter(r => r.hospitalId === session.userId);
+                const myBloodRequests = bloodRequests.filter(r => r.createdByHospitalId === session.userId);
+
+                // Combine both types of requests
+                const allMyRequests = [];
+
+                // Add hospital-to-donor requests
+                for (const r of myHospitalRequests) {
+                    allMyRequests.push({
+                        type: 'hospital-to-donor',
+                        data: r,
+                        time: new Date(r.createdAt).getTime()
+                    });
+                }
+
+                // Add regular blood requests
+                for (const r of myBloodRequests) {
+                    allMyRequests.push({
+                        type: 'blood-request',
+                        data: r,
+                        time: new Date(r.time).getTime()
+                    });
+                }
+
+                // Sort by time (newest first)
+                allMyRequests.sort((a, b) => b.time - a.time);
+
+                if (allMyRequests.length === 0) {
+                    requestsList.innerHTML = '<p class="muted" style="text-align:center;padding:2rem">No requests yet.</p>';
+                    return;
+                }
+
+                for (const req of allMyRequests) {
+                    const card = document.createElement('div');
+                    card.className = 'request-card';
+
+                    if (req.type === 'hospital-to-donor') {
+                        const r = req.data;
+                        const statusClass = r.status === 'accepted' ? 'accepted' : (r.status === 'rejected' ? 'rejected' : 'pending');
+                        const statusText = r.status.charAt(0).toUpperCase() + r.status.slice(1);
+
+                        card.innerHTML = `
+                <div style="flex:1">
+                  <h3 class="request-name" style="margin:0 0 0.5rem">${escapeHtml(r.patientName)}</h3>
+                  <div class="request-details">
+                    <strong>Type:</strong> Hospital to Donor Request<br>
+                    <strong>Blood:</strong> ${escapeHtml(r.bloodGroup)} (${r.unitsNeeded} unit${r.unitsNeeded > 1 ? 's' : ''})<br>
+                    <strong>Donor:</strong> ${escapeHtml(r.donorName)}<br>
+                    <strong>Phone:</strong> ${escapeHtml(r.patientPhone)}<br>
+                    <strong>Urgency:</strong> ${escapeHtml(r.urgency)}<br>
+                    <strong>Needed By:</strong> ${r.neededBy}<br>
+                    ${r.notes ? '<strong>Notes:</strong> ' + escapeHtml(r.notes) + '<br>' : ''}
+                  </div>
+                  <div class="request-time">${new Date(r.createdAt).toLocaleString()}</div>
+                </div>
+                <div class="request-actions">
+                  <span class="status ${statusClass}">${statusText}</span>
+                </div>
+              `;
+                    } else {
+                        // blood-request type
+                        const r = req.data;
+                        const statusClass = r.status === 'accepted' ? 'accepted' : (r.status === 'rejected' ? 'rejected' : 'pending');
+                        const statusText = r.status.charAt(0).toUpperCase() + r.status.slice(1);
+                        const bloodLabel = r.blood || ((r.blood_group || '') + (r.rh === 'negative' ? '-' : '+'));
+
+                        card.innerHTML = `
+                <div style="flex:1">
+                  <h3 class="request-name" style="margin:0 0 0.5rem">${escapeHtml(r.name)}</h3>
+                  <div class="request-details">
+                    <strong>Type:</strong> Blood Request<br>
+                    <strong>Blood:</strong> ${escapeHtml(bloodLabel)}<br>
+                    <strong>Phone:</strong> ${escapeHtml(r.phone)}<br>
+                    <strong>Address:</strong> ${escapeHtml(r.address)}<br>
+                    <strong>Gender:</strong> ${escapeHtml(r.gender)}<br>
+                    <strong>Needed By:</strong> ${r.need_date}<br>
+                  </div>
+                  <div class="request-time">${new Date(r.time).toLocaleString()}</div>
+                </div>
+                <div class="request-actions">
+                  <span class="status ${statusClass}">${statusText}</span>
+                </div>
+              `;
+                    }
+
+                    requestsList.appendChild(card);
+                }
+            }
+
+            function escapeHtml(s) { if (!s) return ''; return String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+
+            // View switching
+            if (viewCampaignsBtn) viewCampaignsBtn.addEventListener('click', () => setView('campaigns'));
+            if (viewRequestsBtn) viewRequestsBtn.addEventListener('click', () => setView('requests'));
+
+            // Campaign modal
+            function openCampaignModal() {
+                campaignModal.setAttribute('aria-hidden', 'false');
+                document.body.style.overflow = 'hidden';
+                campaignResult.textContent = '';
+                campaignForm.reset();
+
+                // Set default date to next week
+                const nextWeek = new Date();
+                nextWeek.setDate(nextWeek.getDate() + 7);
+                document.getElementById('campaign-date').value = nextWeek.toISOString().split('T')[0];
+            }
+
+            function closeCampaignModal() {
+                campaignModal.setAttribute('aria-hidden', 'true');
+                document.body.style.overflow = '';
+            }
+
+            if (newCampaignBtn) newCampaignBtn.addEventListener('click', openCampaignModal);
+            if (campaignModalClose) campaignModalClose.addEventListener('click', closeCampaignModal);
+            if (campaignModalCancel) campaignModalCancel.addEventListener('click', closeCampaignModal);
+
+            // Submit campaign
+            if (campaignForm) {
+                campaignForm.addEventListener('submit', e => {
+                    e.preventDefault();
+                    const fd = new FormData(campaignForm);
+
+                    const title = (fd.get('title') || '').trim();
+                    const location = (fd.get('location') || '').trim();
+                    const date = fd.get('date');
+                    const time = fd.get('time');
+                    const description = (fd.get('description') || '').trim();
+                    const target = fd.get('target') || 0;
+
+                    if (!title || !location || !date) {
+                        campaignResult.style.color = '#ffb4b4';
+                        campaignResult.textContent = 'Please fill required fields: title, location, date.';
+                        return;
+                    }
+
+                    const campaign = {
+                        id: Date.now(),
+                        title: title,
+                        location: location,
+                        date: date,
+                        time: time,
+                        description: description,
+                        target: parseInt(target),
+                        createdBy: session.userId,
+                        createdByName: session.identifier,
+                        participants: [],
+                        createdAt: new Date().toISOString()
+                    };
+
+                    const key = 'bb_campaigns';
+                    const existing = JSON.parse(localStorage.getItem(key) || '[]');
+                    existing.push(campaign);
+                    localStorage.setItem(key, JSON.stringify(existing));
+
+                    campaignResult.style.color = '#9fe8c0';
+                    campaignResult.textContent = 'Campaign created successfully.';
+                    setTimeout(() => { closeCampaignModal(); loadCampaigns(); }, 800);
+                });
+            }
+
+            // View participants modal
+            function openParticipantsModal(campaignId) {
+                const allCampaigns = JSON.parse(localStorage.getItem('bb_campaigns') || '[]');
+                const campaign = allCampaigns.find(c => c.id == campaignId);
+
+                if (!campaign) {
+                    alert('Campaign not found.');
+                    return;
+                }
+
+                document.getElementById('participants-modal-title').textContent = `Participants: ${campaign.title}`;
+                participantsList.innerHTML = '';
+
+                const participants = campaign.participants || [];
+                if (participants.length === 0) {
+                    participantsList.innerHTML = '<p class="muted" style="text-align:center;padding:2rem">No participants yet.</p>';
+                } else {
+                    const table = document.createElement('table');
+                    table.style.width = '100%';
+                    table.style.borderCollapse = 'collapse';
+                    table.innerHTML = `
+            <thead>
+              <tr style="border-bottom:2px solid var(--border)">
+                <th style="padding:0.5rem;text-align:left">Name</th>
+                <th style="padding:0.5rem;text-align:left">Blood Group</th>
+                <th style="padding:0.5rem;text-align:left">Phone</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${participants.map(p => `
+                <tr style="border-bottom:1px solid var(--border)">
+                  <td style="padding:0.5rem">${escapeHtml(p.name || 'N/A')}</td>
+                  <td style="padding:0.5rem"><span class="blood-badge">${escapeHtml(p.blood_group || 'N/A')}</span></td>
+                  <td style="padding:0.5rem">${escapeHtml(p.phone || 'N/A')}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          `;
+                    participantsList.appendChild(table);
+                }
+
+                participantsModal.setAttribute('aria-hidden', 'false');
+                document.body.style.overflow = 'hidden';
+            }
+
+            function closeParticipantsModal() {
+                participantsModal.setAttribute('aria-hidden', 'true');
+                document.body.style.overflow = '';
+            }
+
+            if (participantsModalClose) participantsModalClose.addEventListener('click', closeParticipantsModal);
+
+            // Request modal
+            function openRequestModal() {
+                requestModal.setAttribute('aria-hidden', 'false');
+                document.body.style.overflow = 'hidden';
+                requestResult.textContent = '';
+                requestForm.reset();
+
+                // Set default date to tomorrow
+                const tomorrow = new Date();
+                tomorrow.setDate(tomorrow.getDate() + 1);
+                document.getElementById('req-date').value = tomorrow.toISOString().split('T')[0];
+            }
+
+            function closeRequestModal() {
+                requestModal.setAttribute('aria-hidden', 'true');
+                document.body.style.overflow = '';
+            }
+
+            if (newRequestBtn) newRequestBtn.addEventListener('click', openRequestModal);
+            if (requestModalClose) requestModalClose.addEventListener('click', closeRequestModal);
+            if (requestModalCancel) requestModalCancel.addEventListener('click', closeRequestModal);
+
+            // Submit request
+            if (requestForm) {
+                requestForm.addEventListener('submit', e => {
+                    e.preventDefault();
+                    const fd = new FormData(requestForm);
+
+                    const name = (fd.get('name') || '').trim();
+                    const phone = (fd.get('phone') || '').trim();
+                    const address = (fd.get('address') || '').trim();
+                    const blood_group = fd.get('blood_group');
+                    const rh = fd.get('rh');
+                    const gender = fd.get('gender');
+                    const need_date = fd.get('need_date');
+
+                    if (!name || !phone || !address || !blood_group || !rh || !gender || !need_date) {
+                        requestResult.style.color = '#ffb4b4';
+                        requestResult.textContent = 'Please fill all required fields.';
+                        return;
+                    }
+
+                    const blood = `${blood_group}${rh === 'negative' ? '-' : '+'}`;
+                    const item = {
+                        id: Date.now(),
+                        name: name,
+                        phone: phone,
+                        address: address,
+                        gender: gender,
+                        blood_group: blood_group,
+                        rh: rh,
+                        blood: blood,
+                        need_date: need_date,
+                        createdBy: session.identifier,
+                        createdByHospitalId: session.userId,
+                        time: new Date().toISOString(),
+                        status: 'pending'
+                    };
+
+                    const key = 'bb_requests';
+                    const existing = JSON.parse(localStorage.getItem(key) || '[]');
+                    existing.push(item);
+                    localStorage.setItem(key, JSON.stringify(existing));
+
+                    requestResult.style.color = '#9fe8c0';
+                    requestResult.textContent = 'Request created successfully.';
+                    setTimeout(() => { closeRequestModal(); loadRequests(); }, 800);
+                });
+            }
+
+            // Handle view participants button
+            document.body.addEventListener('click', e => {
+                const btn = e.target.closest && e.target.closest('button[data-action="view-participants"]');
+                if (btn) {
+                    const campaignId = btn.getAttribute('data-campaign-id');
+                    openParticipantsModal(campaignId);
+                }
+            });
+
+            // Initial load
+            setView('campaigns');
+        });
+    </script>
+</body>
+
+</html>

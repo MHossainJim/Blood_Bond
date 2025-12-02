@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Hospital Profile — Blood Bond</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <header class="site-header">
+        <div class="container">
+            <h1 class="brand">Blood Bond</h1>
+            <nav class="nav" aria-label="Main navigation">
+                <a href="hospital-home.html">Home</a>
+                <a href="hospital-campaigns.html">Campaigns</a>
+            </nav>
+            <div style="display:flex;align-items:center;gap:1rem">
+                <div id="user-info" style="color:var(--muted);font-size:0.9rem"></div>
+                <a href="hospital-profile.html"><img src="https://i.pravatar.cc/80" alt="Profile" class="avatar"
+                        style="width:40px;height:40px" /></a>
+            </div>
+        </div>
+    </header>
+
+    <main class="container" style="padding-top:2rem;max-width:600px">
+        <h2 style="margin-bottom:1.5rem">Hospital Profile</h2>
+
+        <div class="card" style="text-align:center;padding:2rem">
+            <div style="position:relative;display:inline-block;margin-bottom:1.5rem">
+                <img id="profile-picture" src="https://i.pravatar.cc/150" alt="Hospital Profile" class="avatar"
+                    style="width:120px;height:120px;border:4px solid var(--primary)" />
+                <label for="picture-upload"
+                    style="position:absolute;bottom:0;right:0;background:var(--primary);color:white;border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 2px 4px rgba(0,0,0,0.2)">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z">
+                        </path>
+                        <circle cx="12" cy="13" r="4"></circle>
+                    </svg>
+                </label>
+                <input type="file" id="picture-upload" accept="image/*" style="display:none" />
+            </div>
+
+            <h3 id="hospital-name" style="margin:0 0 0.5rem;font-size:1.5rem">Hospital Name</h3>
+            <p id="hospital-email" style="color:var(--muted);margin:0 0 1rem">email@hospital.com</p>
+
+            <div style="text-align:left;margin-top:1.5rem;padding-top:1.5rem;border-top:1px solid var(--border)">
+                <div style="margin-bottom:0.75rem">
+                    <strong>Contact Person:</strong> <span id="contact-name">-</span>
+                </div>
+                <div style="margin-bottom:0.75rem">
+                    <strong>Address:</strong> <span id="hospital-address">-</span>
+                </div>
+                <div style="margin-bottom:0.75rem">
+                    <strong>License Number:</strong> <span id="license-number">-</span>
+                </div>
+            </div>
+
+            <div style="margin-top:2rem">
+                <button id="logout-btn" class="btn-secondary" style="width:100%">Log Out</button>
+            </div>
+        </div>
+
+        <div id="profile-result" class="result" aria-live="polite" style="margin-top:1rem"></div>
+    </main>
+
+    <footer class="site-footer">
+        <div class="container">
+            <small>© Blood Bond — Hospital Portal</small>
+        </div>
+    </footer>
+
+    <script src="auth.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const session = BBAuth.requireLogin();
+            if (!session) return;
+
+            if (session.role !== 'hospital') {
+                alert('Access denied. Hospital accounts only.');
+                window.location.href = 'index.html';
+                return;
+            }
+
+            const profilePicture = document.getElementById('profile-picture');
+            const pictureUpload = document.getElementById('picture-upload');
+            const hospitalName = document.getElementById('hospital-name');
+            const hospitalEmail = document.getElementById('hospital-email');
+            const contactName = document.getElementById('contact-name');
+            const hospitalAddress = document.getElementById('hospital-address');
+            const licenseNumber = document.getElementById('license-number');
+            const logoutBtn = document.getElementById('logout-btn');
+            const profileResult = document.getElementById('profile-result');
+            const userInfoEl = document.getElementById('user-info');
+
+            // Load hospital data
+            const users = JSON.parse(localStorage.getItem('bb_users') || '[]');
+            const hospital = users.find(u => u.id === session.userId);
+
+            if (!hospital) {
+                alert('Hospital account not found.');
+                BBAuth.logout();
+                return;
+            }
+
+            // Display hospital info
+            hospitalName.textContent = hospital.hospital_name || 'Hospital Name';
+            hospitalEmail.textContent = hospital.email || session.identifier;
+            contactName.textContent = hospital.name || '-';
+            hospitalAddress.textContent = hospital.address || '-';
+            licenseNumber.textContent = hospital.license_number || '-';
+
+            if (hospital.picture) {
+                profilePicture.src = hospital.picture;
+            }
+
+            if (userInfoEl) {
+                userInfoEl.textContent = hospital.hospital_name || session.identifier;
+            }
+
+            // Handle profile picture upload
+            if (pictureUpload) {
+                pictureUpload.addEventListener('change', e => {
+                    const file = e.target.files[0];
+                    if (!file) {
+                        return;
+                    }
+
+                    // Check file size (max 2MB)
+                    if (file.size > 2 * 1024 * 1024) {
+                        profileResult.textContent = 'Image too large. Please choose an image under 2MB.';
+                        profileResult.style.color = '#ef4444';
+                        return;
+                    }
+
+                    // Check file type
+                    if (!file.type.startsWith('image/')) {
+                        profileResult.textContent = 'Please select a valid image file.';
+                        profileResult.style.color = '#ef4444';
+                        return;
+                    }
+
+                    // Read and convert to Data URL
+                    const reader = new FileReader();
+                    reader.onload = function (event) {
+                        const dataUrl = event.target.result;
+
+                        // Update UI
+                        profilePicture.src = dataUrl;
+
+                        // Save to localStorage
+                        hospital.picture = dataUrl;
+                        const userIdx = users.findIndex(u => u.id === session.userId);
+                        if (userIdx !== -1) {
+                            users[userIdx] = hospital;
+                            localStorage.setItem('bb_users', JSON.stringify(users));
+
+                            profileResult.textContent = 'Profile picture updated successfully.';
+                            profileResult.style.color = '#4ade80';
+                            setTimeout(() => { profileResult.textContent = ''; }, 3000);
+                        }
+                    };
+                    reader.onerror = function () {
+                        profileResult.textContent = 'Error reading image file.';
+                        profileResult.style.color = '#ef4444';
+                    };
+                    reader.readAsDataURL(file);
+                });
+            }
+
+            // Handle logout
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', () => {
+                    if (confirm('Are you sure you want to log out?')) {
+                        BBAuth.logout();
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+
+</html>
