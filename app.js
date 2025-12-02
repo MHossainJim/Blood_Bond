@@ -222,6 +222,18 @@ document.addEventListener('DOMContentLoaded', ()=>{
         const users = JSON.parse(localStorage.getItem('bb_users')||'[]');
         const me = users.find(u=>u.id === (session && session.userId));
         const eligible = me && me.nid && me.blood_group && me.age && me.address;
+        
+        // Check donation cooldown (90 days) if action is donate
+        if(action === 'donate' && me && me.last_donation){
+          const lastDonationDate = new Date(me.last_donation);
+          const daysSinceLastDonation = Math.floor((Date.now() - lastDonationDate.getTime()) / (1000 * 60 * 60 * 24));
+          if(daysSinceLastDonation < 90){
+            const daysRemaining = 90 - daysSinceLastDonation;
+            alert(`You must wait ${daysRemaining} more days before donating again. Last donation: ${me.last_donation}`);
+            return;
+          }
+        }
+        
         if(eligible){
           const storageKey = action === 'donate' ? 'bb_donations' : 'bb_requests';
           const entry = {
